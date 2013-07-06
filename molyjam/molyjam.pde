@@ -10,6 +10,7 @@ ArrayList<Emotion> emotions = new ArrayList<Emotion>();
 
 // background
 Background bg = new Background();
+float playerTargetX;
 
 // text displayer
 TextDisplayer textDisplayer = new TextDisplayer();
@@ -29,6 +30,7 @@ void setup() {
   groundY = height - 50;
 
   guy.setup(groundY);
+  playerTargetX = width/2;
 
 
   showHidden = false;
@@ -58,6 +60,10 @@ void update() {
   }
   
   //bg.updateBackground();
+  
+  //check for scrolling (on his pelvis)
+  float playerDistFromCenter = guy.particles[3].pos.x - playerTargetX;
+  scroll(-playerDistFromCenter*0.1);  //xeno to make it smoother
 }
 
 void draw() {
@@ -65,7 +71,7 @@ void draw() {
 
   background(255);
   
-  bg.draw();
+  bg.draw(playerTargetX);
 
   guy.draw(showHidden);
 
@@ -98,6 +104,16 @@ void keyPressed() {
 
 void keyReleased() {
   guy.checkKeyUp(key);
+}
+
+
+void scroll(float scrollX){
+  guy.scroll(scrollX);
+  bg.scroll(scrollX);
+  for (int i=0; i<emotions.size(); i++) {
+    Emotion thisEmotion = emotions.get(i);
+    thisEmotion.scroll(scrollX);
+  }
 }
 
 void spawnEmotion() {

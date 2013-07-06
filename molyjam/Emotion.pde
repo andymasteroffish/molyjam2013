@@ -41,5 +41,9 @@ class Emotion {
     fill(20, 20, 180);
     ellipse(xPos, yPos, hitSize, hitSize);
   }
+  
+  void scroll(float scrollX){
+    xPos+=scrollX;
+  }
 }
 
