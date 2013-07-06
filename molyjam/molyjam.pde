@@ -8,6 +8,12 @@ Person guy = new Person();
 //emotions
 ArrayList<Emotion> emotions = new ArrayList<Emotion>();
 
+// background
+Background bg = new Background();
+
+// text displayer
+TextDisplayer textDisplayer = new TextDisplayer();
+
 int groundY;
 
 boolean showHidden;
@@ -28,6 +34,8 @@ void setup() {
   showHidden = false;
 
   prevFrameTime = millis();
+  
+  bg.setup();
 }
 
 void update() {
@@ -43,12 +51,16 @@ void update() {
     Emotion thisEmotion = emotions.get(i);
     thisEmotion.update(deltaTime);
   }
+  
+  bg.updateBackground();
 }
 
 void draw() {
   update();
 
   background(255);
+  
+  bg.draw();
 
   guy.draw(showHidden);
 
