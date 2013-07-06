@@ -8,6 +8,9 @@ Person guy = new Person();
 
 //emotions
 ArrayList<Emotion> emotions = new ArrayList<Emotion>();
+float emotionSpawnTimer;
+float emotionMaxNextSpawnTime = 10;
+float emotionMinNextSpawnTime = 3;
 
 // background
 Background bg = new Background();
@@ -36,15 +39,18 @@ void setup() {
 
   guy.setup(groundY);
   playerTargetX = width/2;
+  
+  //start with some time before the first emotion spawn
+  emotionSpawnTimer = emotionMaxNextSpawnTime;
 
 
   showHidden = false;
 
   prevFrameTime = millis();
-  
+
   bg.setup();
   textDisplayer.setup();
-  
+
   minim = new Minim(this);
   SM.setup(minim);
 }
@@ -56,27 +62,34 @@ void update() {
   guy.resetForces();
 
   guy.update(deltaTime);
-  
+
   //check what kind of text we should be showing
   boolean showEmotionalText = guy.emotionalLevel > 50;
   println("emotions: "+showEmotionalText);
   textDisplayer.updateShowEmotionalText( showEmotionalText );
-  
+
   //update emotion pick ups
   for (int i=emotions.size()-1; i>=0; i--) {
     Emotion thisEmotion = emotions.get(i);
     thisEmotion.update(deltaTime, guy);
-    
-    if (thisEmotion.killMe){
-      emotions.remove(i); 
+
+    if (thisEmotion.killMe) {
+      emotions.remove(i);
     }
   }
-  
+
+  //is it time for a new emotion?
+  emotionSpawnTimer -= deltaTime;
+  if (emotionSpawnTimer <= 0) {
+    spawnEmotion();
+    emotionSpawnTimer = random(emotionMinNextSpawnTime, emotionMaxNextSpawnTime);
+  }
+
   //bg.updateBackground();
-  
+
   //check for scrolling (on his pelvis)
   float playerDistFromCenter = guy.particles[3].pos.x - playerTargetX;
-  if (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos){
+  if (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos) {
     scroll(-playerDistFromCenter*0.1);  //xeno to make it smoother
   }
 }
@@ -85,11 +98,11 @@ void draw() {
   update();
 
   background(255);
-  
+
   bg.draw(playerTargetX);
 
   guy.draw(showHidden);
-  
+
   textDisplayer.draw();
 
   stroke(0);
@@ -117,16 +130,15 @@ void keyPressed() {
   if (key == '5') {
     spawnEmotion();
   }
-  
-  if (key == 's'){
+
+  if (key == 's') {
     SM.songDull.pause();
-    SM.songEmotional.play(); 
+    SM.songEmotional.play();
   }
-  if (key == 'd'){
+  if (key == 'd') {
     SM.songEmotional.pause();
-    SM.songDull.play(); 
+    SM.songDull.play();
   }
-  
 }
 
 void keyReleased() {
@@ -134,7 +146,7 @@ void keyReleased() {
 }
 
 
-void scroll(float scrollX){
+void scroll(float scrollX) {
   guy.scroll(scrollX);
   bg.scroll(scrollX);
   for (int i=0; i<emotions.size(); i++) {

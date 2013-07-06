@@ -20,7 +20,7 @@ class Person {
   float emotionalDrainPerSec;
 
   void setup(int _groundY) {
-    guy.facePic = loadImage("pic/AndyHead.png");
+    guy.facePic = loadImage("pic/pmneux.png");
 
     thisScale = 35;   //how much to multiply everything by
     

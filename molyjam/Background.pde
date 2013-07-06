@@ -69,15 +69,15 @@ class Background {
 
 
   void loadImages() {
-    backgroundPics[0] = loadImage("0.jpeg");
-    backgroundPics[1] = loadImage("1.jpeg");
-    backgroundPics[2] = loadImage("2.jpeg");
-    backgroundPics[3] = loadImage("3.jpeg");
+    backgroundPics[0] = loadImage("brickwall.png");
+    backgroundPics[1] = loadImage("fastfood.png");
+    backgroundPics[2] = loadImage("graduation.png");
+    backgroundPics[3] = loadImage("church_interior.png");
 
-    places[0] = "yawning";
-    places[1] = "exasperated";
-    places[2] = "alert";
-    places[3] = "aghast";
+    places[0] = "wall";
+    places[1] = "fastFood";
+    places[2] = "graduation";
+    places[3] = "church";
   }
 
 }
