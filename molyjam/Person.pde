@@ -14,6 +14,10 @@ class Person {
 
   int groundY;
   boolean onTheGround;
+  
+  //emotions
+  float emotionalLevel;
+  float emotionalDrainPerSec;
 
   void setup(int _groundY) {
     guy.facePic = loadImage("pic/AndyHead.png");
@@ -26,6 +30,8 @@ class Person {
 
     groundY = _groundY;
     onTheGround = false;
+    
+    emotionalDrainPerSec = 2;
 
     //particle thisParticle;
 
@@ -149,6 +155,9 @@ class Person {
 
   void update(float deltaTime) {
     float stretchDist = 50;
+    
+    //deal with the emotional drain
+    emotionalLevel -= emotionalDrainPerSec*deltaTime;
 
 
     //check the keys
@@ -270,6 +279,10 @@ class Person {
          text (words, particles[i].pos.x, particles[i].pos.y);
       }
     }
+  }
+  
+  void earnEmotion(float val){
+    emotionalLevel += val;
   }
   
   

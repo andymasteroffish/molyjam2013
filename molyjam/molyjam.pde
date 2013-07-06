@@ -6,7 +6,7 @@ float prevFrameTime;
 Person guy = new Person();
 
 //emotions
-//ArrayList<Emotion> emotions = new ArrayList<Emotion>();
+ArrayList<Emotion> emotions = new ArrayList<Emotion>();
 
 // background
 Background bg = new Background();
@@ -47,12 +47,16 @@ void update() {
   guy.update(deltaTime);
   
   //update emotion pick ups
-  for (int i=0; i<emotions.size(); i++) {
+  for (int i=emotions.size()-1; i>=0; i--) {
     Emotion thisEmotion = emotions.get(i);
-    thisEmotion.update(deltaTime);
+    thisEmotion.update(deltaTime, guy);
+    
+    if (thisEmotion.killMe){
+      emotions.remove(i); 
+    }
   }
   
-  bg.updateBackground();
+  //bg.updateBackground();
 }
 
 void draw() {
