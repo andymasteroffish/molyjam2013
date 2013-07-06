@@ -1,14 +1,15 @@
 class TextDisplayer {
-  int NUM_TEXT = 1;
+  int NUM_TEXT = 2;
 
   String[] allText = new String[NUM_TEXT];
-  String[] parsed;
+  String currentLine;
 
-  float[] triggerTimes;
-  float[] alphas;
-  boolean[] shouldFadeOut;
+  ArrayList<String> parsed = new ArrayList<String>();
+  ArrayList<Float> triggerTimes;
+  ArrayList<Float> alphas;
 
   boolean shouldFadeAllOut;
+  boolean shouldShowAnyText;
 
   float interval;
 
@@ -16,58 +17,72 @@ class TextDisplayer {
     interval = 6000;
 
     loadText();
-    parsed = parseString(allText[0]);
-    triggerText();
+    selectString();
+    parsed = parseString(currentLine);
+    triggerText(parsed);
+    shouldShowAnyText = true;
   }
 
   void updateText(String location) {
   }
 
   void draw() {
-    
-    if (millis() > triggerTimes[triggerTimes.length - 1] + interval) {
-     shouldFadeAllOut = true; 
-    }
+    if (shouldShowAnyText) {
+      // fade out if last trigger happened + interval
+      if (millis() > triggerTimes.get(triggerTimes.size() - 1) + interval) {
+        shouldFadeAllOut = true;
+      }
 
-    if (!shouldFadeAllOut) { // if we're not fading all of them out
-      for (int i = 0; i < triggerTimes.length; i++) { // for each trigger time
-        if (millis() > triggerTimes[i]) { // see if we're bigger
-          //shouldFadeIn[i] = true; // and if so, fade in
-          
-          fill(0, alphas[i]);
-          text(parsed[i], 0, i*50 + 50);
-          if (alphas[i] < 255) {
-            alphas[i]++;
+      if (!shouldFadeAllOut) { // if we're not fading all of them out
+        for (int i = 0; i < triggerTimes.size(); i++) {
+          if (millis() > triggerTimes.get(i)) {
+            fill(0, alphas.get(i));
+            text(parsed.get(i), 0, i*50 + 50);
+            if (alphas.get(i) < 255) {
+              float tempAlpha = alphas.get(i);
+              tempAlpha++;
+              alphas.set(i, tempAlpha);
+            }
+          }
+        }
+      } 
+      else {
+        for (int i = 0; i < triggerTimes.size(); i++) {
+          fill(0, alphas.get(i));
+          text(parsed.get(i), 0, i*50 + 50);
+          if (alphas.get(i) > 0) {
+            float tempAlpha = alphas.get(i);
+            tempAlpha--;
+            alphas.set(i, tempAlpha);
+          } 
+          else {
+            reset();
           }
         }
       }
-    } else {
-      for (int i = 0; i < triggerTimes.length; i++) {
-        //shouldFadeIn[i] = false;
-        
-          fill(0, alphas[i]);
-          text(parsed[i], 0, i*50 + 50);
-          if (alphas[i] > 0) {
-            alphas[i]--;
-          }
-      } 
     }
-    
-    
-    
   }
 
+  void reset() {
+    parsed.clear();
+    triggerTimes.clear();
+    alphas.clear();
+    shouldFadeAllOut = false;
 
-  void triggerText() {
-    triggerTimes = new float[parsed.length]; // array holds trigger times for each line
-    alphas = new float[parsed.length]; // holds alphas
-//    shouldFadeIn = new boolean[parsed.length];
+    selectString();
+    parsed = parseString(currentLine);
+    triggerText(parsed);
+    shouldShowAnyText = true;
+  }
+
+  void triggerText(ArrayList<String> parsed) {
+    triggerTimes = new ArrayList<Float>();
+    alphas = new ArrayList<Float>();
 
     int startTime = millis();
-    for (int i = 0; i < triggerTimes.length; i++) {
-      triggerTimes[i] = startTime + (i * interval); 
-      alphas[i] = 0;
-      println(triggerTimes[i]);
+    for (int i = 0; i < parsed.size(); i++) {
+      triggerTimes.add(startTime + (i * interval)); 
+      alphas.add(float(0));
     }
   }
 
@@ -75,10 +90,20 @@ class TextDisplayer {
   void loadText() {
     // where we/ezra will put the text to be loaded in
     allText[0] = "You begin to think of how a child must feel when they are separated from their mother. Children, you realize, have much to teach us.";
+    allText[1] = "What if everyone can feel more than I can? This brings tears to your eyes.";
   }
 
-  String[] parseString(String currentString) {
-    return currentString.split("(?<=[.?!]) ");
+  void selectString() {
+    int random = int(random(allText.length));
+    currentLine = allText[random];
+  }
+
+  ArrayList<String> parseString(String currentLine) {
+    String tempLine[] = currentLine.split("(?<=[.?!]) ");
+    for (int i = 0; i < tempLine.length; i++) {
+      parsed.add(tempLine[i]);
+    }
+    return parsed;
   }
 }
 
