@@ -36,6 +36,7 @@ void setup() {
   prevFrameTime = millis();
   
   bg.setup();
+  textDisplayer.setup();
 }
 
 void update() {
