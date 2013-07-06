@@ -63,7 +63,9 @@ void update() {
   
   //check for scrolling (on his pelvis)
   float playerDistFromCenter = guy.particles[3].pos.x - playerTargetX;
-  scroll(-playerDistFromCenter*0.1);  //xeno to make it smoother
+  if (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos){
+    scroll(-playerDistFromCenter*0.1);  //xeno to make it smoother
+  }
 }
 
 void draw() {

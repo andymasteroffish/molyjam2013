@@ -19,13 +19,14 @@ class Background {
 
   int currentIndex;
 
+  float startPos = -200;
 
 
   // 700 x 600
 
   void setup() {
     increment = new PVector(2, 0);
-    pos = new PVector(0, 0);
+    pos = new PVector(startPos, 0);
 
     loadImages();
 
@@ -58,7 +59,6 @@ class Background {
       //if this is the one the player is on, give that title to the text display
       if (xPos < playerTargetX && xPos+theseBackgrounds[i].width > playerTargetX){
         textDisplayer.updateText(thesePlaces[i]);
-        println("you are in "+thesePlaces[i]);
       }
       
       
