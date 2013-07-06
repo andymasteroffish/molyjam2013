@@ -74,6 +74,8 @@ void draw() {
   bg.draw(playerTargetX);
 
   guy.draw(showHidden);
+  
+  textDisplayer.draw();
 
   stroke(0);
   line(0, groundY, width, groundY);
