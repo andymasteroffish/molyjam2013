@@ -57,6 +57,11 @@ void update() {
 
   guy.update(deltaTime);
   
+  //check what kind of text we should be showing
+  boolean showEmotionalText = guy.emotionalLevel > 50;
+  println("emotions: "+showEmotionalText);
+  textDisplayer.updateShowEmotionalText( showEmotionalText );
+  
   //update emotion pick ups
   for (int i=emotions.size()-1; i>=0; i--) {
     Emotion thisEmotion = emotions.get(i);
@@ -105,7 +110,7 @@ void keyPressed() {
   }
 
   if (keyCode == ENTER) {
-    guy.setup(groundY);
+    guy.resetPlayer();
   }
 
   //tetsing EMOTIONS

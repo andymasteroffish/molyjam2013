@@ -31,7 +31,7 @@ class Background {
     loadImages();
 
     for (int i=0; i<theseBackgrounds.length; i++) {
-      int randomChoice = int(random(backgroundPics.length-1));
+      int randomChoice = int(random(backgroundPics.length));
       theseBackgrounds[i] = backgroundPics[randomChoice];
       thesePlaces[i] = places[randomChoice];
     }

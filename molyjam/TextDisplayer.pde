@@ -1,9 +1,14 @@
 class TextDisplayer {
-  int NUM_TEXT = 2;
+  int NUM_AREAS = 1;
 
-  String[] allText = new String[NUM_TEXT];
+  PlaceText[] allText = new PlaceText[NUM_AREAS];
   String currentLine;
-
+  
+  //sorting it all by place/emotion
+  int placeNum;
+  boolean showEmotionalText = true;
+  
+  
   ArrayList<String> parsed = new ArrayList<String>();
   ArrayList<Float> triggerTimes;
   ArrayList<Float> alphas;
@@ -16,14 +21,26 @@ class TextDisplayer {
   void setup() {
     interval = 6000;
 
-    loadText();
+    //get our text
+    for (int i=0; i<NUM_AREAS; i++)  allText[i] = new PlaceText();
+    allText[0].setup("field");
+
     selectString();
     parsed = parseString(currentLine);
     triggerText(parsed);
     shouldShowAnyText = true;
+    
+    showEmotionalText = true;
+    
   }
 
   void updateText(String location) {
+    placeNum = 0;  //default in case nothing else triggers
+    
+    if (location == "field")  placeNum = 0;
+  }
+  void updateShowEmotionalText(boolean _showEmotionalText){
+    showEmotionalText = _showEmotionalText;
   }
 
   void draw() {
@@ -87,15 +104,28 @@ class TextDisplayer {
   }
 
   // not really gonna change
-  void loadText() {
-    // where we/ezra will put the text to be loaded in
-    allText[0] = "You begin to think of how a child must feel when they are separated from their mother. Children, you realize, have much to teach us.";
-    allText[1] = "What if everyone can feel more than I can? This brings tears to your eyes.";
-  }
+//  void loadText() {
+//    // where we/ezra will put the text to be loaded in
+//    //allText[0] = "You begin to think of how a child must feel when they are separated from their mother. Children, you realize, have much to teach us.";
+//    //allText[1] = "What if everyone can feel more than I can? This brings tears to your eyes.";
+//    
+//    for (int i=0; i<NUM_AREAS; i++){
+//      
+//    }
+//  }
 
   void selectString() {
-    int random = int(random(allText.length));
-    currentLine = allText[random];
+    //int random = int(random(allText.length));
+    
+    if (showEmotionalText){
+      currentLine = allText[placeNum].getEmotionalText();
+      println("get it exciting");
+    }else{
+      currentLine = allText[placeNum].getDullText();
+      println("get it dull");
+    }
+    
+    
   }
 
   ArrayList<String> parseString(String currentLine) {

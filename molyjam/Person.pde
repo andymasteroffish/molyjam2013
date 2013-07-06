@@ -23,14 +23,11 @@ class Person {
     guy.facePic = loadImage("pic/AndyHead.png");
 
     thisScale = 35;   //how much to multiply everything by
-    float xOffset = 200;
-    float yOffset = 100;
-
-    float defaultSpringiness = 0.2f;
+    
 
     groundY = _groundY;
-    onTheGround = false;
     
+    emotionalLevel = 100;
     emotionalDrainPerSec = 2;
 
     //particle thisParticle;
@@ -45,6 +42,18 @@ class Person {
       muscleKeys[i] = new MuscleKey();
     }
 
+    resetPlayer();
+    
+  }
+  
+  void resetPlayer(){
+    float xOffset = 200;
+    float yOffset = 100;
+
+    float defaultSpringiness = 0.2f;
+    
+    onTheGround = false;
+    
     int curParticle = 0;
     int curSpring  = 0;
 
@@ -144,7 +153,6 @@ class Person {
     muscleKeys[curMuscleKey++].setup('i', springs[26], true, particles[11]);
     muscleKeys[curMuscleKey++].setup('o', springs[10], false, null);
     muscleKeys[curMuscleKey++].setup('p', springs[20], false, particles[7]);
-    
   }
 
   void resetForces() {
@@ -158,6 +166,7 @@ class Person {
     
     //deal with the emotional drain
     emotionalLevel -= emotionalDrainPerSec*deltaTime;
+    //println("emotions: "+emotionalLevel);
 
 
     //check the keys
@@ -213,7 +222,7 @@ class Person {
     if ( particles[7].pos.y >= groundY-groundDistToCount)  onTheGround = true;
     
     if (onTheGround){
-      setup(groundY);
+      resetPlayer();
     }
   }
 
