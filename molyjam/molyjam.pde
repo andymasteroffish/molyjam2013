@@ -1,3 +1,4 @@
+import ddf.minim.*;
 
 //timing
 float prevFrameTime;
@@ -14,6 +15,10 @@ float playerTargetX;
 
 // text displayer
 TextDisplayer textDisplayer = new TextDisplayer();
+
+//sound manager
+SoundManager SM = new SoundManager();
+Minim minim;
 
 int groundY;
 
@@ -39,6 +44,9 @@ void setup() {
   
   bg.setup();
   textDisplayer.setup();
+  
+  minim = new Minim(this);
+  SM.setup(minim);
 }
 
 void update() {
@@ -104,6 +112,16 @@ void keyPressed() {
   if (key == '5') {
     spawnEmotion();
   }
+  
+  if (key == 's'){
+    SM.songDull.pause();
+    SM.songEmotional.play(); 
+  }
+  if (key == 'd'){
+    SM.songEmotional.pause();
+    SM.songDull.play(); 
+  }
+  
 }
 
 void keyReleased() {
