@@ -285,6 +285,12 @@ class Person {
     emotionalLevel += val;
   }
   
+  void scroll(float scrollX){
+    for (int i=0; i<particles.length; i++){
+      particles[i].pos.x += scrollX;
+    } 
+  }
+  
   
   boolean checkInPolygon(PVector[] p, float x, float y)
   {
