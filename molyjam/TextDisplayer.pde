@@ -1,7 +1,8 @@
 class TextDisplayer {
-  int NUM_TEXT = 1;
+  int NUM_TEXT = 2;
 
   String[] allText = new String[NUM_TEXT];
+  String currentLine;
   String[] parsed;
 
   float[] triggerTimes;
@@ -16,8 +17,9 @@ class TextDisplayer {
     interval = 6000;
 
     loadText();
-    parsed = parseString(allText[0]);
-    triggerText();
+    selectString();
+    parsed = parseString(currentLine);
+    triggerText(parsed);
   }
 
   void updateText(String location) {
@@ -49,32 +51,41 @@ class TextDisplayer {
           text(parsed[i], 0, i*50 + 50);
           if (alphas[i] > 0) {
             alphas[i]--;
+          } else {
+            reset();
           }
-      } 
+      }
     }
     
     
     
   }
 
+  void selectString() {
+    int random = int(random(allText.length));
+    currentLine = allText[random];
+  }
 
-  void triggerText() {
+  void triggerText(String[] parsed) {
     triggerTimes = new float[parsed.length]; // array holds trigger times for each line
     alphas = new float[parsed.length]; // holds alphas
-//    shouldFadeIn = new boolean[parsed.length];
 
     int startTime = millis();
     for (int i = 0; i < triggerTimes.length; i++) {
       triggerTimes[i] = startTime + (i * interval); 
       alphas[i] = 0;
-      println(triggerTimes[i]);
     }
+  }
+  
+  void reset() {
+    
   }
 
   // not really gonna change
   void loadText() {
     // where we/ezra will put the text to be loaded in
     allText[0] = "You begin to think of how a child must feel when they are separated from their mother. Children, you realize, have much to teach us.";
+    allText[1] = "What if everyone can feel more than I can? This brings tears to your eyes.";
   }
 
   String[] parseString(String currentString) {
