@@ -2,8 +2,7 @@ class Person {
 
   particle[] particles = new particle[12];
   spring[] springs = new spring[27];
-
-  float  thisScale;
+  float thisScale;
 
   PImage facePic;
   PVector facePoint;
@@ -14,18 +13,14 @@ class Person {
 
 
   int groundY;
-  
   boolean onTheGround;
-  
-  float emotionalLevel;
-
 
   void setup(int _groundY) {
     guy.facePic = loadImage("pic/AndyHead.png");
 
     thisScale = 35;   //how much to multiply everything by
     float xOffset = 200;
-    float yOffset = 150;
+    float yOffset = 100;
 
     float defaultSpringiness = 0.2f;
 
@@ -34,13 +29,13 @@ class Person {
 
     //particle thisParticle;
 
-    for (int i=0; i<particles.length; i++) {
+    for (int i=0; i<particles.length; i++){
       particles[i] = new particle();
     }
-    for (int i=0; i<springs.length; i++) {
+    for (int i=0; i<springs.length; i++){
       springs[i] = new spring();
     }
-    for (int i=0; i<muscleKeys.length; i++) {
+    for (int i=0; i<muscleKeys.length; i++){
       muscleKeys[i] = new MuscleKey();
     }
 
@@ -70,10 +65,10 @@ class Person {
     //right leg
     particles[curParticle++].setInitialCondition(xOffset+6* thisScale, yOffset+6* thisScale, 0, 0);
     particles[curParticle++].setInitialCondition(xOffset+6* thisScale, yOffset+8* thisScale, 0, 0);
-
+    
     //set the ground for all springs
-    for (int i=0; i<particles.length; i++) {
-      particles[i].groundY = groundY;
+    for (int i=0; i<particles.length; i++){
+      particles[i].groundY = groundY; 
     }
 
     //put in the visible springs
@@ -103,6 +98,9 @@ class Person {
     springs[curSpring++].setFromParticles(particles[10], particles[3], defaultSpringiness, true);
 
     //secret support springs
+    //spring supportSpring;
+    //supportSpring.springiness = defaultSpringiness;
+    //supportSpring.showing = false;
 
     //left head and arms
     springs[curSpring++].setFromParticles(particles[4], particles[0], defaultSpringiness*4, false);
@@ -136,10 +134,11 @@ class Person {
     muscleKeys[curMuscleKey++].setup('q', springs[17], false, particles[5]);
     muscleKeys[curMuscleKey++].setup('w', springs[8], false, null);
     muscleKeys[curMuscleKey++].setup('e', springs[25], true, particles[9] );
-
+    
     muscleKeys[curMuscleKey++].setup('i', springs[26], true, particles[11]);
     muscleKeys[curMuscleKey++].setup('o', springs[10], false, null);
     muscleKeys[curMuscleKey++].setup('p', springs[20], false, particles[7]);
+    
   }
 
   void resetForces() {
@@ -150,6 +149,7 @@ class Person {
 
   void update(float deltaTime) {
     float stretchDist = 50;
+
 
     //check the keys
     for (int i=0; i<muscleKeys.length; i++) {
@@ -181,7 +181,8 @@ class Person {
     facePoint = mathVector;
     //facePoint = (particles[0].pos.mult(2) +particles[1].pos)/3;    //favoring point 0
     faceAngle = atan2(particles[2].pos.y-particles[0].pos.y, particles[2].pos.x-particles[0].pos.x)-PI/2;
-
+    
+    
     //checking for neck snap
     PVector[] neckCheckPoints = new PVector[4];
     neckCheckPoints[0] = particles[0].pos;
@@ -222,6 +223,9 @@ class Person {
 
 
   void draw(boolean showDebug) {
+
+
+
     fill(0);
     particles[4].draw();
     particles[6].draw();
@@ -244,10 +248,10 @@ class Person {
       //in dbeug, show numbers
       if (showDebug) {
         fill(200, 0, 0);
-        float xPos = (springs[i].particleA.pos.x + springs[i].particleB.pos.x)/2;
-        float yPos = (springs[i].particleA.pos.y + springs[i].particleB.pos.y)/2; 
-        String words = ""+i;
-        text (words, xPos, yPos);
+          float xPos = (springs[i].particleA.pos.x + springs[i].particleB.pos.x)/2;
+          float yPos = (springs[i].particleA.pos.y + springs[i].particleB.pos.y)/2; 
+          String words = ""+i;
+          text (words, xPos, yPos);
       }
     }
     strokeWeight(1);
@@ -259,17 +263,16 @@ class Person {
     image(facePic, -facePic.width/2, -facePic.height/2);
     popMatrix();
 
-    if (showDebug) {
-      fill(0, 0, 255);
-      for (int i = 0; i < particles.length; i++) {
-        String words = ""+i;
-        text (words, particles[i].pos.x, particles[i].pos.y);
+    if (showDebug){
+      fill(0,0,255);
+      for (int i = 0; i < particles.length; i++){
+         String words = ""+i;
+         text (words, particles[i].pos.x, particles[i].pos.y);
       }
     }
   }
-
-
-
+  
+  
   boolean checkInPolygon(PVector[] p, float x, float y)
   {
     int i =0;

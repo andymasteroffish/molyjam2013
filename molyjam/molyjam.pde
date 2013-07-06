@@ -6,7 +6,7 @@ float prevFrameTime;
 Person guy = new Person();
 
 //emotions
-ArrayList<Emotion> emotions = new ArrayList<Emotion>();
+//ArrayList<Emotion> emotions = new ArrayList<Emotion>();
 
 // background
 Background bg = new Background();
