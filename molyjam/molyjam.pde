@@ -29,6 +29,7 @@ ArrayList<Burst> bursts = new ArrayList<Burst>();
 
 //emotion warning
 WarningText warningText = new WarningText();
+boolean canShowNoEmotionWarning;
 
 // background
 Background bg = new Background();
@@ -111,6 +112,8 @@ void startGame() {
   guy.resetPlayer();
 
   tint(255, 255);
+  
+  canShowNoEmotionWarning = true;
 
   gameTimer = 0;
 
@@ -144,6 +147,18 @@ void update() {
     else if (guy.emotionalLevel > guy.emotionalLevelCutOff+10){
      warningText.active = false; 
      SM.stopKlaxon();
+    }
+    
+    if (guy.emotionalLevel >= guy.emotionalLevelCutOff){
+      if (!canShowNoEmotionWarning){
+        println("I live in a fucked up dream");
+        warningText.triggerSpecial("YOU HAVE EMOTIONS AGAIN");
+      }
+      canShowNoEmotionWarning = true; 
+    }
+    if (guy.emotionalLevel < guy.emotionalLevelCutOff && canShowNoEmotionWarning){
+      canShowNoEmotionWarning = false;
+      warningText.triggerSpecial("YOU ARE NOW EMOTIONLESS");
     }
 
     //check what kind of text we should be showing
@@ -285,20 +300,20 @@ void keyPressed() {
   }
 
   //tetsing EMOTIONS
-//  if (key == '5') {
-//    spawnEmotion();
-//  }
-//
+  if (key == '5') {
+    spawnEmotion();
+  }
+
 //  if (key == 'k') {
 //    endGame();
 //  }
 //
-//  if (key == '-') {
-//    guy.emotionalLevel = 0;
-//  }
-//  if (key=='=') {
-//    guy.emotionalLevel = 100;
-//  }
+  if (key == '1') {
+    guy.emotionalLevel += 10;
+  }
+  if (key=='2') {
+    guy.emotionalLevel -= 10;
+  }
 //  
 //  if (key=='t') {
 //    warningText.trigger();
