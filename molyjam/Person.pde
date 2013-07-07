@@ -171,13 +171,15 @@ class Person {
     }
   }
 
-  void update(float deltaTime) {
+  void update(float deltaTime, boolean stillInGame) {
     float stretchDist = 50;
 
     //deal with the emotional drain
-    emotionalLevel -= emotionalDrainPerSec*deltaTime;
-    emotionalLevel = constrain(emotionalLevel, 0, 100);
-    curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
+    if (stillInGame){
+      emotionalLevel -= emotionalDrainPerSec*deltaTime;
+      emotionalLevel = constrain(emotionalLevel, 0, 100);
+      curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
+    }
 
 
     //check the keys
@@ -334,6 +336,11 @@ class Person {
 
   void collapse() {
     collapsed = true;
+    
+    for (int i=0; i<particles.length; i++){
+     particles[i].vel = new PVector(0,0); 
+     particles[i].frc = new PVector(0,0);
+    }
   }
 }
 

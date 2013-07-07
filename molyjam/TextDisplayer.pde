@@ -1,5 +1,5 @@
 class TextDisplayer {
-  int NUM_AREAS = 5;
+  int NUM_AREAS = 6;
   PFont emotional;
   PFont unemotional;
 
@@ -40,6 +40,7 @@ class TextDisplayer {
     allText[2].setup("church");
     allText[3].setup("fastFood");
     allText[4].setup("graduation");
+    allText[5].setup("graveyard");
 
     selectString();
     parsed = parseString(currentLine);

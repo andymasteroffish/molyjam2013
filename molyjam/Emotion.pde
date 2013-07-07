@@ -11,7 +11,7 @@ class Emotion {
   void setup() {
 
     xPos = width+hitSize*2;
-    yPos = 145+50;
+    yPos = 145;
 
     speed = 100;
 

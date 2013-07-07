@@ -1,6 +1,8 @@
 class EndScene {
 
+  PImage endBGPic;
   PImage[] endPics = new PImage[3];
+  PVector[] endPicsOffsets = new PVector[3];
   int curEndPic;
   PImage bonusPic;
 
@@ -10,8 +12,8 @@ class EndScene {
   float intervalTimer = 10000;
 
   float fadeAlpha;
-  float fadeTime = 4;
-  float pauseTime = 3;
+  float fadeTime = 7;
+  float pauseTime = 10;
   float fadeTimer;
   boolean fadeIn;
 
@@ -20,22 +22,27 @@ class EndScene {
 
   void setup() {
 
-    endPics[0] = loadImage("data/endScrenTemp.png");
-    endPics[1] = loadImage("data/endScrenTemp.png");
-    endPics[2] = loadImage("data/endScrenTemp.png");
+    endBGPic = loadImage("data/EndPieces/EndBG.png");
+    endPics[0] = loadImage("data/EndPieces/EndEmotional.png");
+    endPics[1] = loadImage("data/EndPieces/EndSemiEmotional.png");
+    endPics[2] = loadImage("data/EndPieces/EndUnemotional.png");
+
+    endPicsOffsets[0] = new PVector(width/2-endPics[0].width/2, height/2-endPics[0].height/2);
+    endPicsOffsets[1] = new PVector(width/2-endPics[1].width/2, height/2-endPics[1].height/2);
+    endPicsOffsets[2] = new PVector(width/2-endPics[2].width/2, height/2-endPics[2].height/2);
 
     bonusPic = loadImage("data/Title2_full.png");
-    }
+  }
 
-    void start(float emotionalLevel) {
-      curEndPic = 0; 
+  void start(float emotionalLevel) {
+    curEndPic = 0; 
 
-      fadeAlpha = 0;
-      fadeTimer = 0;
-      fadeIn = true;
+    fadeAlpha = 0;
+    fadeTimer = 0;
+    fadeIn = true;
 
-      showingBonus = false;
-    }
+    showingBonus = false;
+  }
 
 
   void update(float deltaTime) {
@@ -66,8 +73,8 @@ class EndScene {
 
 
     tint(255, fadeAlpha);
-
-    image(endPics[curEndPic], 0, 0);
+    image(endBGPic, 0, 0);
+    image(endPics[curEndPic], endPicsOffsets[curEndPic].x, endPicsOffsets[curEndPic].y);
 
     tint(255, 255);
   }

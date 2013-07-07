@@ -112,7 +112,7 @@ void update() {
   else if (gameState.equals("game") || gameState.equals("end")) {
     guy.resetForces();
 
-    guy.update(deltaTime);
+    guy.update(deltaTime, gameState.equals("game"));
 
     //check what kind of text we should be showing
     boolean showEmotionalText = guy.emotionalLevel > 50;
@@ -143,9 +143,16 @@ void update() {
 
     //check for scrolling (on his pelvis)
     float playerDistFromCenter = guy.particles[3].pos.x - playerTargetX;
-    if (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos) {
+    if ( (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos) && ( playerDistFromCenter < 0 || bg.pos.x >= bg.endPos)) {
       scroll(-playerDistFromCenter*0.1);  //xeno to make it smoother
     }
+    
+    //is it time to die?
+    if (gameState.equals("game") &&  playerDistFromCenter > 0 && bg.pos.x < bg.endPos){
+      endGame();
+    }
+    
+    
   } 
   
   
