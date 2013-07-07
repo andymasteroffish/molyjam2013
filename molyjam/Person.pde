@@ -8,6 +8,8 @@ class Person {
   PImage curFacePic;
   PVector facePoint;
   float faceAngle;
+  
+  float pull = 0.2;  //how much to pull the player each frame
 
 
   MuscleKey[] muscleKeys = new MuscleKey[6];
@@ -205,6 +207,11 @@ class Person {
       particles[i].bounceOffWalls();
       particles[i].addDampingForce();
       particles[i].update();
+      
+      //pull the player
+      if (!collapsed){
+       particles[i].pos.x += pull; 
+      }
     }
 
     //set the face

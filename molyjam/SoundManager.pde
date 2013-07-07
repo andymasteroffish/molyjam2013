@@ -29,7 +29,6 @@ class SoundManager {
     emotionGet = minim.loadFile("audio/emotionGetCut.mp3");
 
     grunt = minim.loadFile("audio/gruntSnap.mp3");
-    //startGame = minim.loadFile("audio/startGame.mp3");
   }
 
   void update(boolean playEmotional) {

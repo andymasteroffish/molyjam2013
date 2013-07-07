@@ -23,6 +23,7 @@ ArrayList<Emotion> emotions = new ArrayList<Emotion>();
 float emotionSpawnTimer;
 float emotionMaxNextSpawnTime = 10;
 float emotionMinNextSpawnTime = 3;
+PImage[] emotionPics = new PImage[1];
 
 // background
 Background bg = new Background();
@@ -36,6 +37,8 @@ TitleScene titleScene = new TitleScene();
 
 //end
 EndScene endScene = new EndScene();
+float gameTimer;
+float gameTime = 120;  //number of seconds in the game
 
 //sound manager
 SoundManager SM = new SoundManager();
@@ -81,8 +84,14 @@ void setup() {
   gameState = "title";
   titlePic = loadImage("/data/TitlePieces/EmptyBackground.png");
   titleScene.setup();
-  
+
   endScene.setup();
+  
+  //set emotion pick ups
+  for (int i=0; i<emotionPics.length; i++){
+    String picName = "data/Pickups/pickup"+i+".png";
+    emotionPics[i] = loadImage(picName);
+  }
 }
 
 void startGame() {
@@ -92,13 +101,17 @@ void startGame() {
   bg.reset();
   guy.resetPlayer();
 
+  tint(255, 255);
+
+  gameTimer = 0;
+
   gameState = "game";
 }
 
-void endGame(){
-   gameState = "end";
-   endScene.start(guy.emotionalLevel);
-   guy.collapse();
+void endGame() {
+  gameState = "end";
+  endScene.start(guy.emotionalLevel);
+  guy.collapse();
 }
 
 void update() {
@@ -146,19 +159,20 @@ void update() {
     if ( (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos) && ( playerDistFromCenter < 0 || bg.pos.x >= bg.endPos)) {
       scroll(-playerDistFromCenter*0.1);  //xeno to make it smoother
     }
-    
+
     //is it time to die?
-    if (gameState.equals("game") &&  playerDistFromCenter > 0 && bg.pos.x < bg.endPos){
-      endGame();
+    if (gameState.equals("game")) {
+      gameTimer += deltaTime;
+      if ( (playerDistFromCenter > 0 && bg.pos.x < bg.endPos) || gameTimer >= gameTime) {
+        endGame();
+      }
     }
-    
-    
   } 
-  
-  
+
+
   if (gameState.equals("end")) {
     endScene.update(deltaTime);
-  } 
+  }
 }
 
 void draw() {
@@ -215,9 +229,9 @@ void keyPressed() {
   if (key == '5') {
     spawnEmotion();
   }
-  
-  if (key == 'k'){
-     endGame();
+
+  if (key == 'k') {
+    endGame();
   }
 
   if (key == '-') {
@@ -257,8 +271,8 @@ void scroll(float scrollX) {
 
 void spawnEmotion() {
   Emotion newEmotion = new Emotion();
-  newEmotion.setup();
+  int randNum = (int)random(emotionPics.length);
+  newEmotion.setup(emotionPics[randNum]);
   emotions.add(newEmotion);
 }
-
 
