@@ -20,10 +20,14 @@ class Person {
   float emotionalLevel;
   float emotionalDrainPerSec;
   float emotionalLevelCutOff = 50;
+  
+  SoundManager SM;
 
-  void setup(int _groundY) {
+  void setup(int _groundY, SoundManager _SM) {
     facePics[0] = loadImage("pic/pmneuxSad.png");
     facePics[1] = loadImage("pic/pmneux1.png");
+    
+    SM = _SM;
 
     thisScale = 35;   //how much to multiply everything by
     
@@ -227,6 +231,7 @@ class Person {
     
     if (onTheGround){
       resetPlayer();
+      SM.playGrunt();
     }
   }
 

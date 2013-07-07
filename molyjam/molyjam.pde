@@ -63,7 +63,7 @@ void setup() {
 
   groundY = height - 50;
 
-  guy.setup(groundY);
+  guy.setup(groundY, SM);
   playerTargetX = width/2;
   
 
@@ -90,6 +90,8 @@ void startGame(){
   
   bg.reset();
   guy.resetPlayer();
+  
+  //SM.playStartGame();
   
   gameState = "game";
 }
@@ -128,7 +130,7 @@ void update() {
     }
     
     //chekc sounds
-    SM.update();
+    SM.update(showEmotionalText);
   
     //bg.updateBackground();
   
@@ -221,6 +223,13 @@ void keyPressed() {
   //tetsing EMOTIONS
   if (key == '5') {
     spawnEmotion();
+  }
+  
+  if (key == '-'){
+   guy.emotionalLevel = 0; 
+  }
+  if (key=='='){
+    guy.emotionalLevel = 100;
   }
   
 //  if (key == ' ') {
