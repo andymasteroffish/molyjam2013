@@ -113,7 +113,7 @@ class TextDisplayer {
   }
 
   void reset() {
-    println("reset snoopy balls");
+    //println("reset snoopy balls");
     parsed.clear();
     triggerTimes.clear();
     alphas.clear();
@@ -139,11 +139,11 @@ class TextDisplayer {
 
   void selectString() {
     if (showEmotionalText) {
-      println("get it exciting");
+      //println("get it exciting");
       currentLine = allText[placeNum].getEmotionalText();
     }
     else {
-      println("get it dull");
+      //println("get it dull");
       currentLine = allText[placeNum].getDullText();
     }
   }
