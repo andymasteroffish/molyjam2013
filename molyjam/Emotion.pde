@@ -43,8 +43,7 @@ class Emotion {
 
     image(pic, xPos-pic.width/2, yPos-pic.height/2);
     fill(20, 20, 180);
-    ellipse(xPos, yPos, hitSize, hitSize);
-    
+    //ellipse(xPos, yPos, hitSize, hitSize);
     
   }
   

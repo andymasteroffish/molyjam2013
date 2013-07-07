@@ -23,7 +23,7 @@ ArrayList<Emotion> emotions = new ArrayList<Emotion>();
 float emotionSpawnTimer;
 float emotionMaxNextSpawnTime = 10;
 float emotionMinNextSpawnTime = 3;
-PImage[] emotionPics = new PImage[1];
+PImage[] emotionPics = new PImage[4];
 
 ArrayList<Burst> bursts = new ArrayList<Burst>();
 
