@@ -137,11 +137,13 @@ void update() {
 
     guy.update(deltaTime, gameState.equals("game"));
     
-    if (guy.emotionalLevel < guy.emotionalLevelCutOff+20 && guy.emotionalLevel > guy.emotionalLevelCutOff && !warningText.active){
+    if (guy.emotionalLevel < guy.emotionalLevelCutOff+10 && guy.emotionalLevel > guy.emotionalLevelCutOff && !warningText.active){
       warningText.trigger();
+      SM.playKlaxon();
     }
-    else if (guy.emotionalLevel > guy.emotionalLevelCutOff+20){
+    else if (guy.emotionalLevel > guy.emotionalLevelCutOff+10){
      warningText.active = false; 
+     SM.stopKlaxon();
     }
 
     //check what kind of text we should be showing
@@ -229,7 +231,9 @@ void draw() {
     tint(255,255);
     image(emptyBG, 0,0);
     
-    tint(255, map(gameTimer, 0, gameTime, 255, 0));
+    float bgAlpha = map(gameTimer, gameTime/2, gameTime, 255, 0);
+    bgAlpha = constrain(bgAlpha, 0, 255);
+    tint(255, bgAlpha);
     bg.draw(playerTargetX);
     
     tint(255,255);

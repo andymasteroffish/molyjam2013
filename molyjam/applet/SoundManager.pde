@@ -7,6 +7,7 @@ class SoundManager {
 
   AudioPlayer emotionGet;
   AudioPlayer grunt;
+  AudioPlayer klaxon;
   //AudioPlayer startGame;
   
   AudioPlayer typewriter;
@@ -32,7 +33,7 @@ class SoundManager {
 
     //sound effects
     emotionGet = minim.loadFile("audio/emotionGetCut.mp3");
-
+    klaxon = minim.loadFile("audio/klaxon.wav");
     grunt = minim.loadFile("audio/gruntSnap.mp3");
     
     typewriter = minim.loadFile("audio/typewriter2.wav");
@@ -68,7 +69,10 @@ class SoundManager {
   void playemotionGet() {
     emotionGet.play();
   }
-  
+  void playKlaxon() {
+    klaxon.rewind();
+    klaxon.play();
+  }
   void playTypewriter() {
     typewriter.play();
   }

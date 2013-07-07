@@ -54,6 +54,7 @@ WarningText warningText = new WarningText();
 
 // background
 Background bg = new Background();
+PImage emptyBG;
 float playerTargetX;
 
 // text displayer
@@ -103,6 +104,7 @@ public void setup() {
 
   bg.setup();
   textDisplayer.setup();
+  emptyBG = loadImage("data/emptyBG.png");
 
   minim = new Minim(this);
   SM.setup(minim);
@@ -159,6 +161,7 @@ public void update() {
     
     if (guy.emotionalLevel < guy.emotionalLevelCutOff+20 && guy.emotionalLevel > guy.emotionalLevelCutOff && !warningText.active){
       warningText.trigger();
+      SM.playKlaxon();
     }
     else if (guy.emotionalLevel > guy.emotionalLevelCutOff+20){
      warningText.active = false; 
@@ -245,13 +248,22 @@ public void draw() {
     titleScene.drawTitle();
   }
   else if (gameState.equals("game") || gameState.equals("end")) {
+    
+    tint(255,255);
+    image(emptyBG, 0,0);
+    
+    float bgAlpha = map(gameTimer, gameTime/2, gameTime, 255, 0);
+    bgAlpha = constrain(bgAlpha, 0, 255);
+    tint(255, bgAlpha);
     bg.draw(playerTargetX);
+    
+    tint(255,255);
 
     guy.draw(showHidden);
 
     textDisplayer.draw();
 
-    stroke(0);
+    stroke(0,50);
     line(0, groundY, width, groundY);
 
     //draw the emotion pick ups
@@ -294,24 +306,24 @@ public void keyPressed() {
   }
 
   //tetsing EMOTIONS
-  if (key == '5') {
-    spawnEmotion();
-  }
-
-  if (key == 'k') {
-    endGame();
-  }
-
-  if (key == '-') {
-    guy.emotionalLevel = 0;
-  }
-  if (key=='=') {
-    guy.emotionalLevel = 100;
-  }
-  
-  if (key=='t') {
-    warningText.trigger();
-  }
+//  if (key == '5') {
+//    spawnEmotion();
+//  }
+//
+//  if (key == 'k') {
+//    endGame();
+//  }
+//
+//  if (key == '-') {
+//    guy.emotionalLevel = 0;
+//  }
+//  if (key=='=') {
+//    guy.emotionalLevel = 100;
+//  }
+//  
+//  if (key=='t') {
+//    warningText.trigger();
+//  }
 
   //  if (key == ' ') {
   //    gameState = "end";  
@@ -777,7 +789,7 @@ class Person {
   PImage curFacePic;
   PVector facePoint;
   float faceAngle;
-  
+
   float pull = 0.3f;  //how much to pull the player each frame
 
 
@@ -796,6 +808,8 @@ class Person {
 
   boolean collapsed;
 
+  PImage jerseyPic;
+
   public void setup(int _groundY, SoundManager _SM) {
     facePics[0] = loadImage("pic/pmneuxSad.png");
     facePics[1] = loadImage("pic/pmneux1.png");
@@ -809,6 +823,8 @@ class Person {
 
     emotionalLevel = 100;
     emotionalDrainPerSec = 1;
+
+    jerseyPic = loadImage("pic/jersey.png");
 
     //particle thisParticle;
 
@@ -946,7 +962,7 @@ class Person {
     float stretchDist = 50;
 
     //deal with the emotional drain
-    if (stillInGame){
+    if (stillInGame) {
       emotionalLevel -= emotionalDrainPerSec*deltaTime;
       emotionalLevel = constrain(emotionalLevel, 0, 100);
       curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
@@ -958,9 +974,9 @@ class Person {
     boolean anyKeyIsDown = false;
     for (int i=0; i<muscleKeys.length; i++) {
       muscleKeys[i].update(deltaTime);
-      
-      if (muscleKeys[i].isDown){
-       anyKeyIsDown = true; 
+
+      if (muscleKeys[i].isDown) {
+        anyKeyIsDown = true;
       }
     }
 
@@ -981,10 +997,10 @@ class Person {
       particles[i].bounceOffWalls();
       particles[i].addDampingForce();
       particles[i].update();
-      
+
       //pull the player
-      if (!collapsed && anyKeyIsDown){
-       particles[i].pos.x += pull; 
+      if (!collapsed && anyKeyIsDown) {
+        particles[i].pos.x += pull;
       }
     }
 
@@ -1049,10 +1065,9 @@ class Person {
     particles[9].draw();
     particles[11].draw();
 
-    strokeWeight(2);
     for (int i = 0; i < springs.length; i++) {
       if (springs[i].showing) {
-        strokeWeight(2);
+        strokeWeight(4);
         stroke(10);
         springs[i].draw();
       }
@@ -1073,6 +1088,21 @@ class Person {
     }
     strokeWeight(1);
 
+
+
+    //draw the jersey
+    float prc = 0.7f;
+    float jerseyX = prc*particles[2].pos.x + (1-prc)*particles[3].pos.x;
+    float jerseyY = prc*particles[2].pos.y + (1-prc)*particles[3].pos.y;
+    float jerseyAngle = atan2(particles[3].pos.y-particles[2].pos.y, particles[3].pos.x-particles[2].pos.x);
+
+    pushMatrix();
+    translate(jerseyX, jerseyY);
+    rotate(jerseyAngle - PI/2);
+    image(jerseyPic, -jerseyPic.width/2, -jerseyPic.height/2);
+    popMatrix();
+
+    //draw the head
     fill(255);
     pushMatrix();
     translate(facePoint.x, facePoint.y);
@@ -1118,10 +1148,10 @@ class Person {
 
   public void collapse() {
     collapsed = true;
-    
-    for (int i=0; i<particles.length; i++){
-     particles[i].vel = new PVector(0,0); 
-     particles[i].frc = new PVector(0,0);
+
+    for (int i=0; i<particles.length; i++) {
+      particles[i].vel = new PVector(0, 0); 
+      particles[i].frc = new PVector(0, 0);
     }
   }
 }
@@ -1346,6 +1376,7 @@ class SoundManager {
 
   AudioPlayer emotionGet;
   AudioPlayer grunt;
+  AudioPlayer klaxon;
   //AudioPlayer startGame;
   
   AudioPlayer typewriter;
@@ -1371,7 +1402,7 @@ class SoundManager {
 
     //sound effects
     emotionGet = minim.loadFile("audio/emotionGetCut.mp3");
-
+    klaxon = minim.loadFile("audio/klaxon.wav");
     grunt = minim.loadFile("audio/gruntSnap.mp3");
     
     typewriter = minim.loadFile("audio/typewriter2.wav");
@@ -1407,7 +1438,10 @@ class SoundManager {
   public void playemotionGet() {
     emotionGet.play();
   }
-  
+  public void playKlaxon() {
+    klaxon.rewind();
+    klaxon.play();
+  }
   public void playTypewriter() {
     typewriter.play();
   }
@@ -1903,141 +1937,7 @@ class particle
     frc.x = frc.x + x;
     frc.y = frc.y + y;
   }
-
-/*
-  //------------------------------------------------------------
-  void addRepulsionForce(float x, float y, float radius, float scale) {
-
-    // ----------- (1) make a vector of where this position is: 
-
-    PVector posOfForce = new PVector(x, y);
-
-    // ----------- (2) calculate the difference & length 
-
-    PVector diff	= pos - posOfForce;
-    float length	= diff.length();
-
-    // ----------- (3) check close enough
-
-      bool bAmCloseEnough = true;
-    if (radius > 0) {
-      if (length > radius) {
-        bAmCloseEnough = false;
-      }
-    }
-
-    // ----------- (4) if so, update force
-
-      if (bAmCloseEnough == true) {
-      float pct = 1 - (length / radius);  // stronger on the inside
-      diff.normalize();
-      frc.x = frc.x + diff.x * scale * pct;
-      frc.y = frc.y + diff.y * scale * pct;
-    }
-  }
   
-
-  //------------------------------------------------------------
-  void addAttractionForce(float x, float y, float radius, float scale) {
-
-    // ----------- (1) make a vector of where this position is: 
-
-    PVector posOfForce;
-    posOfForce.set(x, y);
-
-    // ----------- (2) calculate the difference & length 
-
-    PVector diff	= pos - posOfForce;
-    float length	= diff.length();
-
-    // ----------- (3) check close enough
-
-      bool bAmCloseEnough = true;
-    if (radius > 0) {
-      if (length > radius) {
-        bAmCloseEnough = false;
-      }
-    }
-
-    // ----------- (4) if so, update force
-
-      if (bAmCloseEnough == true) {
-      float pct = 1 - (length / radius);  // stronger on the inside
-      diff.normalize();
-      frc.x = frc.x - diff.x * scale * pct;
-      frc.y = frc.y - diff.y * scale * pct;
-    }
-  }
-
-  //------------------------------------------------------------
-  void addRepulsionForce(particle p, float radius, float scale) {
-
-    // ----------- (1) make a vector of where this particle p is: 
-    PVector posOfForce;
-    posOfForce.set(p.pos.x, p.pos.y);
-
-    // ----------- (2) calculate the difference & length 
-
-    PVector diff	= pos - posOfForce;
-    float length	= diff.length();
-
-    // ----------- (3) check close enough
-
-      bool bAmCloseEnough = true;
-    if (radius > 0) {
-      if (length > radius) {
-        bAmCloseEnough = false;
-      }
-    }
-
-    // ----------- (4) if so, update force
-
-      if (bAmCloseEnough == true) {
-      float pct = 1 - (length / radius);  // stronger on the inside
-      diff.normalize();
-      frc.x = frc.x + diff.x * scale * pct;
-      frc.y = frc.y + diff.y * scale * pct;
-      p.frc.x = p.frc.x - diff.x * scale * pct;
-      p.frc.y = p.frc.y - diff.y * scale * pct;
-    }
-  }
-  
-  
-  //------------------------------------------------------------
-  void addAttractionForce(particle p, float radius, float scale) {
-
-    // ----------- (1) make a vector of where this particle p is: 
-    PVector posOfForce;
-    posOfForce.set(p.pos.x, p.pos.y);
-
-    // ----------- (2) calculate the difference & length 
-
-    PVector diff	= pos - posOfForce;
-    float length	= diff.length();
-
-    // ----------- (3) check close enough
-
-      bool bAmCloseEnough = true;
-    if (radius > 0) {
-      if (length > radius) {
-        bAmCloseEnough = false;
-      }
-    }
-
-    // ----------- (4) if so, update force
-
-      if (bAmCloseEnough == true) {
-      float pct = 1 - (length / radius);  // stronger on the inside
-      diff.normalize();
-      frc.x = frc.x - diff.x * scale * pct;
-      frc.y = frc.y - diff.y * scale * pct;
-      p.frc.x = p.frc.x + diff.x * scale * pct;
-      p.frc.y = p.frc.y + diff.y * scale * pct;
-    }
-  }
-  
-*/
-
   //------------------------------------------------------------
   public void addDampingForce() {
 
@@ -2067,7 +1967,7 @@ class particle
 
   //------------------------------------------------------------
   public void draw() {
-    ellipse(pos.x, pos.y, 6,6);
+    ellipse(pos.x, pos.y, 9,9);
   }
 
 

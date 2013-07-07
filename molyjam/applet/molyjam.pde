@@ -32,6 +32,7 @@ WarningText warningText = new WarningText();
 
 // background
 Background bg = new Background();
+PImage emptyBG;
 float playerTargetX;
 
 // text displayer
@@ -81,6 +82,7 @@ void setup() {
 
   bg.setup();
   textDisplayer.setup();
+  emptyBG = loadImage("data/emptyBG.png");
 
   minim = new Minim(this);
   SM.setup(minim);
@@ -137,6 +139,7 @@ void update() {
     
     if (guy.emotionalLevel < guy.emotionalLevelCutOff+20 && guy.emotionalLevel > guy.emotionalLevelCutOff && !warningText.active){
       warningText.trigger();
+      SM.playKlaxon();
     }
     else if (guy.emotionalLevel > guy.emotionalLevelCutOff+20){
      warningText.active = false; 
@@ -223,13 +226,22 @@ void draw() {
     titleScene.drawTitle();
   }
   else if (gameState.equals("game") || gameState.equals("end")) {
+    
+    tint(255,255);
+    image(emptyBG, 0,0);
+    
+    float bgAlpha = map(gameTimer, gameTime/2, gameTime, 255, 0);
+    bgAlpha = constrain(bgAlpha, 0, 255);
+    tint(255, bgAlpha);
     bg.draw(playerTargetX);
+    
+    tint(255,255);
 
     guy.draw(showHidden);
 
     textDisplayer.draw();
 
-    stroke(0);
+    stroke(0,50);
     line(0, groundY, width, groundY);
 
     //draw the emotion pick ups
@@ -272,24 +284,24 @@ void keyPressed() {
   }
 
   //tetsing EMOTIONS
-  if (key == '5') {
-    spawnEmotion();
-  }
-
-  if (key == 'k') {
-    endGame();
-  }
-
-  if (key == '-') {
-    guy.emotionalLevel = 0;
-  }
-  if (key=='=') {
-    guy.emotionalLevel = 100;
-  }
-  
-  if (key=='t') {
-    warningText.trigger();
-  }
+//  if (key == '5') {
+//    spawnEmotion();
+//  }
+//
+//  if (key == 'k') {
+//    endGame();
+//  }
+//
+//  if (key == '-') {
+//    guy.emotionalLevel = 0;
+//  }
+//  if (key=='=') {
+//    guy.emotionalLevel = 100;
+//  }
+//  
+//  if (key=='t') {
+//    warningText.trigger();
+//  }
 
   //  if (key == ' ') {
   //    gameState = "end";  

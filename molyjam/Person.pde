@@ -8,7 +8,7 @@ class Person {
   PImage curFacePic;
   PVector facePoint;
   float faceAngle;
-  
+
   float pull = 0.3;  //how much to pull the player each frame
 
 
@@ -27,6 +27,8 @@ class Person {
 
   boolean collapsed;
 
+  PImage jerseyPic;
+
   void setup(int _groundY, SoundManager _SM) {
     facePics[0] = loadImage("pic/pmneuxSad.png");
     facePics[1] = loadImage("pic/pmneux1.png");
@@ -40,6 +42,8 @@ class Person {
 
     emotionalLevel = 100;
     emotionalDrainPerSec = 1;
+
+    jerseyPic = loadImage("pic/jersey.png");
 
     //particle thisParticle;
 
@@ -177,7 +181,7 @@ class Person {
     float stretchDist = 50;
 
     //deal with the emotional drain
-    if (stillInGame){
+    if (stillInGame) {
       emotionalLevel -= emotionalDrainPerSec*deltaTime;
       emotionalLevel = constrain(emotionalLevel, 0, 100);
       curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
@@ -189,9 +193,9 @@ class Person {
     boolean anyKeyIsDown = false;
     for (int i=0; i<muscleKeys.length; i++) {
       muscleKeys[i].update(deltaTime);
-      
-      if (muscleKeys[i].isDown){
-       anyKeyIsDown = true; 
+
+      if (muscleKeys[i].isDown) {
+        anyKeyIsDown = true;
       }
     }
 
@@ -212,10 +216,10 @@ class Person {
       particles[i].bounceOffWalls();
       particles[i].addDampingForce();
       particles[i].update();
-      
+
       //pull the player
-      if (!collapsed && anyKeyIsDown){
-       particles[i].pos.x += pull; 
+      if (!collapsed && anyKeyIsDown) {
+        particles[i].pos.x += pull;
       }
     }
 
@@ -303,6 +307,21 @@ class Person {
     }
     strokeWeight(1);
 
+
+
+    //draw the jersey
+    float prc = 0.7;
+    float jerseyX = prc*particles[2].pos.x + (1-prc)*particles[3].pos.x;
+    float jerseyY = prc*particles[2].pos.y + (1-prc)*particles[3].pos.y;
+    float jerseyAngle = atan2(particles[3].pos.y-particles[2].pos.y, particles[3].pos.x-particles[2].pos.x);
+
+    pushMatrix();
+    translate(jerseyX, jerseyY);
+    rotate(jerseyAngle - PI/2);
+    image(jerseyPic, -jerseyPic.width/2, -jerseyPic.height/2);
+    popMatrix();
+
+    //draw the head
     fill(255);
     pushMatrix();
     translate(facePoint.x, facePoint.y);
@@ -348,10 +367,10 @@ class Person {
 
   void collapse() {
     collapsed = true;
-    
-    for (int i=0; i<particles.length; i++){
-     particles[i].vel = new PVector(0,0); 
-     particles[i].frc = new PVector(0,0);
+
+    for (int i=0; i<particles.length; i++) {
+      particles[i].vel = new PVector(0, 0); 
+      particles[i].frc = new PVector(0, 0);
     }
   }
 }
