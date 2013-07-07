@@ -83,7 +83,7 @@ void setup() {
   //setup the title
   gameState = "title";
   titlePic = loadImage("/data/TitlePieces/EmptyBackground.png");
-  titleScene.setup();
+  titleScene.setup(SM);
 
   endScene.setup();
   

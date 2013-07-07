@@ -37,9 +37,13 @@ class TitleScene {
  float[] offsets = new float[6];
  PImage[] letters = new PImage[6];
  float controlAlpha;
+ 
+ SoundManager SM;
   
   
- void setup() {
+ void setup(SoundManager _SM) {
+   SM = _SM;
+   
   startTime = millis();
   for (int i = 0; i < delaysTop.length; i++) {
     delaysTop[i] = i * 500 + 500;  
