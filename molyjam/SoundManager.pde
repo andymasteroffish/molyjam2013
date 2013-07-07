@@ -58,9 +58,6 @@ class SoundManager {
   void playemotionGet() {
     emotionGet.play();
   }
-//  void playStartGame() {
-//    startGame.rewind();
-//    startGame.play();
-//  }
+  
 }
 

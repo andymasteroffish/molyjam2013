@@ -9,7 +9,7 @@
  * Game By Ezra Schrage, Jane Friedhoff,                 *
  * Ben Johnson & Andy Wallace for Molyjam 2013          *
  ********************************************************/
- 
+
 import ddf.minim.*;
 
 //timing
@@ -34,14 +34,14 @@ TextDisplayer textDisplayer = new TextDisplayer();
 // title
 TitleScene titleScene = new TitleScene();
 
+//end
+EndScene endScene = new EndScene();
+
 //sound manager
 SoundManager SM = new SoundManager();
 Minim minim;
 
-//fade in/out timer for endgame + bonus screen
-float startMessageTimer;
-float intervalTimer;
-float fadeAlpha;
+
 
 
 int groundY;
@@ -51,10 +51,7 @@ boolean showHidden;
 //title stuff
 String gameState;
 PImage titlePic;
-PImage endingHighEmotions;
-PImage endingMedEmotions;
-PImage endingLowEmotions;
-PImage bonus;
+
 
 
 void setup() {
@@ -68,7 +65,7 @@ void setup() {
 
   guy.setup(groundY, SM);
   playerTargetX = width/2;
-  
+
 
   showHidden = false;
 
@@ -79,142 +76,125 @@ void setup() {
 
   minim = new Minim(this);
   SM.setup(minim);
-  
+
   //setup the title
   gameState = "title";
   titlePic = loadImage("/data/TitlePieces/EmptyBackground.png");
   titleScene.setup();
   
-  intervalTimer = 10000; // for reading end screen
+  endScene.setup();
 }
 
-void startGame(){
-    //start with some time before the first emotion spawn
+void startGame() {
+  //start with some time before the first emotion spawn
   emotionSpawnTimer = emotionMaxNextSpawnTime;
-  
+
   bg.reset();
   guy.resetPlayer();
-  
-  //SM.playStartGame();
-  
+
   gameState = "game";
+}
+
+void endGame(){
+   gameState = "end";
+   endScene.start(guy.emotionalLevel);
+   guy.collapse();
 }
 
 void update() {
   float deltaTime = ((float)millis()-prevFrameTime)/1000.0;
   prevFrameTime = millis();
 
-  if (gameState.equals("title")){
+  if (gameState.equals("title")) {
     //fucking nothing right now goddamn
     titleScene.updateTitle();
-  }else if (gameState.equals("game")){
+  }
+  else if (gameState.equals("game") || gameState.equals("end")) {
     guy.resetForces();
-  
+
     guy.update(deltaTime);
-  
+
     //check what kind of text we should be showing
     boolean showEmotionalText = guy.emotionalLevel > 50;
     textDisplayer.updateShowEmotionalText( showEmotionalText, guy.emotionalLevel, guy.emotionalLevelCutOff );
-  
+
     //update emotion pick ups
     for (int i=emotions.size()-1; i>=0; i--) {
       Emotion thisEmotion = emotions.get(i);
       thisEmotion.update(deltaTime, guy);
-  
+
       if (thisEmotion.killMe) {
         emotions.remove(i);
         SM.playemotionGet();
       }
     }
-  
+
     //is it time for a new emotion?
     emotionSpawnTimer -= deltaTime;
     if (emotionSpawnTimer <= 0) {
       spawnEmotion();
       emotionSpawnTimer = random(emotionMinNextSpawnTime, emotionMaxNextSpawnTime);
     }
-    
+
     //chekc sounds
     SM.update(showEmotionalText);
-  
+
     //bg.updateBackground();
-  
+
     //check for scrolling (on his pelvis)
     float playerDistFromCenter = guy.particles[3].pos.x - playerTargetX;
     if (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos) {
       scroll(-playerDistFromCenter*0.1);  //xeno to make it smoother
     }
-  } else if (gameState.equals("end")) {
-    // startmessagetimer needs to be set at the moment end is triggered
-    if (millis() > startMessageTimer + intervalTimer) {
-        fade("in");
-        if (fadeAlpha > 255) {
-          gameState = "bonus";  
-        }
-    }
-  } else if (gameState.equals("bonus")) {
-    fade("out");      
-  }
+  } 
+  
+  
+  if (gameState.equals("end")) {
+    endScene.update(deltaTime);
+  } 
 }
 
 void draw() {
   update();
 
   background(255);
-  
-  if (gameState.equals("title")){
-    image(titlePic,0,0);
+
+  if (gameState.equals("title")) {
+    image(titlePic, 0, 0);
     titleScene.drawTitle();
   }
-  else if (gameState.equals("game")){
+  else if (gameState.equals("game") || gameState.equals("end")) {
     bg.draw(playerTargetX);
-  
+
     guy.draw(showHidden);
-  
+
     textDisplayer.draw();
-  
+
     stroke(0);
     line(0, groundY, width, groundY);
-  
+
     //draw the emotion pick ups
     for (int i=0; i<emotions.size(); i++) {
       Emotion thisEmotion = emotions.get(i);
       thisEmotion.draw();
     }
-  } else if (gameState.equals("end")) {
-    if (guy.emotionalLevel < 33) {
-//      image(endingLowEmotions, 0, 0); 
-    } else if (guy.emotionalLevel >= 33 && guy.emotionalLevel < 66) {
-//      image(endingMedEmotions, 0, 0);
-    } else if (guy.emotionalLevel > 66) {
-//      image(endingHighEmotions, 0, 0);
-    }
-    
-    if (millis() > startMessageTimer + intervalTimer) {
-      noStroke();
-      fill(0, fadeAlpha);
-      rect(0, 0, width, height);
-      stroke(0);
-    }
-  } else if (gameState.equals("bonus")) {
-//    image(bonus, 0, 0);
-    noStroke();
-    fill(0, fadeAlpha);
-    rect(0, 0, width, height);
-    stroke(0);
+  } 
+
+  if (gameState.equals("end")) {
+    endScene.draw();
   }
 }
 
 void keyPressed() {
-  
-  if (gameState.equals("title")){
+
+  if (gameState.equals("title")) {
     startGame();
   }
-  else if (gameState.equals("game")){
+  else if (gameState.equals("game")) {
     guy.checkKeyDown(key);
   }
-  
-  
+
+
 
 
   //DEBUG STUFF
@@ -231,26 +211,29 @@ void keyPressed() {
     spawnEmotion();
   }
   
-  if (key == '-'){
-   guy.emotionalLevel = 0; 
+  if (key == 'k'){
+     endGame();
   }
-  if (key=='='){
+
+  if (key == '-') {
+    guy.emotionalLevel = 0;
+  }
+  if (key=='=') {
     guy.emotionalLevel = 100;
   }
-  
-//  if (key == ' ') {
-//    gameState = "end";  
-//  }
 
-//  if (key == 's') {
-//    SM.songDull.pause();
-//    SM.songEmotional.play();
-//  }
-//  if (key == 'd') {
-//    SM.songEmotional.pause();
-//    SM.songDull.play();
-//  }
+  //  if (key == ' ') {
+  //    gameState = "end";  
+  //  }
 
+  //  if (key == 's') {
+  //    SM.songDull.pause();
+  //    SM.songEmotional.play();
+  //  }
+  //  if (key == 'd') {
+  //    SM.songEmotional.pause();
+  //    SM.songDull.play();
+  //  }
 }
 
 void keyReleased() {
@@ -273,13 +256,4 @@ void spawnEmotion() {
   emotions.add(newEmotion);
 }
 
-void fade(String whichWay) {
- if (whichWay.equals("in")) {
-    if (millis() > startMessageTimer + intervalTimer) {
-      fadeAlpha++;
-    }
- } else if (whichWay.equals("out")) {
-    fadeAlpha--;
- } 
-}
 

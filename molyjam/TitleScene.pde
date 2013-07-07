@@ -26,6 +26,7 @@ class TitleScene {
  
  float[] offsets = new float[6];
   
+  
  void setup() {
   startTime = millis(); // since it never REALLY starts on millis()
   delayTitle = 1000;
