@@ -45,7 +45,7 @@ TitleScene titleScene = new TitleScene();
 //end
 EndScene endScene = new EndScene();
 float gameTimer;
-float gameTime = 5;//120;  //number of seconds in the game
+float gameTime = 120;  //number of seconds in the game
 
 //sound manager
 SoundManager SM = new SoundManager();
@@ -230,7 +230,9 @@ void update() {
   if (gameState.equals("end")) {
     endScene.update(deltaTime);
     println("phase "+endScene.phase);
-    if(endScene.phase == 5){
+    if(endScene.phase == 4){
+      SM.songDull.pause();
+      SM.songEmotional.pause();
       setup();
     }
   }

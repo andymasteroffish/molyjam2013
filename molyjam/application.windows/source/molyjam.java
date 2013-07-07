@@ -251,6 +251,12 @@ public void update() {
 
   if (gameState.equals("end")) {
     endScene.update(deltaTime);
+    println("phase "+endScene.phase);
+    if(endScene.phase == 4){
+      SM.songDull.pause();
+      SM.songEmotional.pause();
+      setup();
+    }
   }
 }
 
@@ -313,29 +319,29 @@ public void keyPressed() {
 
 
   //DEBUG STUFF
-  if (key == 'd') {
-    showHidden = !showHidden;
-  }
-
-  if (keyCode == ENTER) {
-    guy.resetPlayer();
-  }
-
-  //tetsing EMOTIONS
-  if (key == '5') {
-    spawnEmotion();
-  }
+//  if (key == 'd') {
+//    showHidden = !showHidden;
+//  }
+//
+//  if (keyCode == ENTER) {
+//    guy.resetPlayer();
+//  }
+//
+//  //tetsing EMOTIONS
+//  if (key == '5') {
+//    spawnEmotion();
+//  }
 
 //  if (key == 'k') {
 //    endGame();
 //  }
 //
-  if (key == '1') {
-    guy.emotionalLevel += 10;
-  }
-  if (key=='2') {
-    guy.emotionalLevel -= 10;
-  }
+//  if (key == '1') {
+//    guy.emotionalLevel += 10;
+//  }
+//  if (key=='2') {
+//    guy.emotionalLevel -= 10;
+//  }
 //  
 //  if (key=='t') {
 //    warningText.trigger();
@@ -697,7 +703,6 @@ class EndScene {
     }
     
     if (phase == 2 || phase ==3){
-      println("this phase: "+phase);
       float thisAlpha = phase==2 ? fadeAlpha : 255-fadeAlpha;
       tint(255, thisAlpha);
       image(attributionPic, 142, 154);
