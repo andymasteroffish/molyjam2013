@@ -1,12 +1,12 @@
 /********************************************************
- * QWOPassage: The Journey of Peter Molyneux            *
+ * QWOPassage: The Marathon Of Life                     *
  *                                                      *
  * This is an important game and Im glad you found it   *
  *                                                      *
  * This game should only be played by                   *
  * those seeking a true emotional experience            *
  *                                                      *
- * Game By Ezra Schrage, Jane Friedhoff,                 *
+ * Game By Ezra Schrage, Jane Friedhoff,                *
  * Ben Johnson & Andy Wallace for Molyjam 2013          *
  ********************************************************/
 
@@ -29,9 +29,11 @@ ArrayList<Burst> bursts = new ArrayList<Burst>();
 
 //emotion warning
 WarningText warningText = new WarningText();
+boolean canShowNoEmotionWarning;
 
 // background
 Background bg = new Background();
+PImage emptyBG;
 float playerTargetX;
 
 // text displayer
@@ -81,6 +83,7 @@ void setup() {
 
   bg.setup();
   textDisplayer.setup();
+  emptyBG = loadImage("data/emptyBG.png");
 
   minim = new Minim(this);
   SM.setup(minim);
@@ -109,6 +112,8 @@ void startGame() {
   guy.resetPlayer();
 
   tint(255, 255);
+  
+  canShowNoEmotionWarning = true;
 
   gameTimer = 0;
 
@@ -135,11 +140,25 @@ void update() {
 
     guy.update(deltaTime, gameState.equals("game"));
     
-    if (guy.emotionalLevel < guy.emotionalLevelCutOff+20 && guy.emotionalLevel > guy.emotionalLevelCutOff && !warningText.active){
+    if (guy.emotionalLevel < guy.emotionalLevelCutOff+10 && guy.emotionalLevel > guy.emotionalLevelCutOff && !warningText.active){
       warningText.trigger();
+      SM.playKlaxon();
     }
-    else if (guy.emotionalLevel > guy.emotionalLevelCutOff+20){
-     warningText.active = false; 
+    else if (guy.emotionalLevel > guy.emotionalLevelCutOff+10){
+     //warningText.active = false; 
+     SM.stopKlaxon();
+    }
+    
+    if (guy.emotionalLevel >= guy.emotionalLevelCutOff){
+      if (!canShowNoEmotionWarning){
+        println("I live in a fucked up dream");
+        warningText.triggerSpecial("YOU HAVE EMOTIONS AGAIN");
+      }
+      canShowNoEmotionWarning = true; 
+    }
+    if (guy.emotionalLevel < guy.emotionalLevelCutOff && canShowNoEmotionWarning){
+      canShowNoEmotionWarning = false;
+      warningText.triggerSpecial("YOU ARE NOW EMOTIONLESS");
     }
 
     //check what kind of text we should be showing
@@ -223,13 +242,22 @@ void draw() {
     titleScene.drawTitle();
   }
   else if (gameState.equals("game") || gameState.equals("end")) {
+    
+    tint(255,255);
+    image(emptyBG, 0,0);
+    
+    float bgAlpha = map(gameTimer, gameTime/2, gameTime, 255, 0);
+    bgAlpha = constrain(bgAlpha, 0, 255);
+    tint(255, bgAlpha);
     bg.draw(playerTargetX);
+    
+    tint(255,255);
 
     guy.draw(showHidden);
 
     textDisplayer.draw();
 
-    stroke(0);
+    stroke(0,50);
     line(0, groundY, width, groundY);
 
     //draw the emotion pick ups
@@ -276,20 +304,20 @@ void keyPressed() {
     spawnEmotion();
   }
 
-  if (key == 'k') {
-    endGame();
+//  if (key == 'k') {
+//    endGame();
+//  }
+//
+  if (key == '1') {
+    guy.emotionalLevel += 10;
   }
-
-  if (key == '-') {
-    guy.emotionalLevel = 0;
+  if (key=='2') {
+    guy.emotionalLevel -= 10;
   }
-  if (key=='=') {
-    guy.emotionalLevel = 100;
-  }
-  
-  if (key=='t') {
-    warningText.trigger();
-  }
+//  
+//  if (key=='t') {
+//    warningText.trigger();
+//  }
 
   //  if (key == ' ') {
   //    gameState = "end";  

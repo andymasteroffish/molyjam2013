@@ -14,8 +14,6 @@ class WarningText {
   boolean active;
   
   void setup() {
-    warningText = "COLLECT MORE EMOTIONS";
-
     startXPos = xPos = endXPos = width/2;
     
     startYPos = yPos = height + 30; // or something~
@@ -28,11 +26,18 @@ class WarningText {
   }
   
   void trigger(){
+    warningText = "COLLECT MORE EMOTIONS";
     active = true; 
     shouldStartTimer = false;
     startedTimer = false;
     endYPos = endYPosSafe;
     yPos = startYPos;
+  }
+  
+  void triggerSpecial(String newText){
+    trigger();
+    
+    warningText = newText;
   }
   
   void update() {

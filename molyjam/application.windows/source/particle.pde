@@ -31,141 +31,7 @@ class particle
     frc.x = frc.x + x;
     frc.y = frc.y + y;
   }
-
-/*
-  //------------------------------------------------------------
-  void addRepulsionForce(float x, float y, float radius, float scale) {
-
-    // ----------- (1) make a vector of where this position is: 
-
-    PVector posOfForce = new PVector(x, y);
-
-    // ----------- (2) calculate the difference & length 
-
-    PVector diff	= pos - posOfForce;
-    float length	= diff.length();
-
-    // ----------- (3) check close enough
-
-      bool bAmCloseEnough = true;
-    if (radius > 0) {
-      if (length > radius) {
-        bAmCloseEnough = false;
-      }
-    }
-
-    // ----------- (4) if so, update force
-
-      if (bAmCloseEnough == true) {
-      float pct = 1 - (length / radius);  // stronger on the inside
-      diff.normalize();
-      frc.x = frc.x + diff.x * scale * pct;
-      frc.y = frc.y + diff.y * scale * pct;
-    }
-  }
   
-
-  //------------------------------------------------------------
-  void addAttractionForce(float x, float y, float radius, float scale) {
-
-    // ----------- (1) make a vector of where this position is: 
-
-    PVector posOfForce;
-    posOfForce.set(x, y);
-
-    // ----------- (2) calculate the difference & length 
-
-    PVector diff	= pos - posOfForce;
-    float length	= diff.length();
-
-    // ----------- (3) check close enough
-
-      bool bAmCloseEnough = true;
-    if (radius > 0) {
-      if (length > radius) {
-        bAmCloseEnough = false;
-      }
-    }
-
-    // ----------- (4) if so, update force
-
-      if (bAmCloseEnough == true) {
-      float pct = 1 - (length / radius);  // stronger on the inside
-      diff.normalize();
-      frc.x = frc.x - diff.x * scale * pct;
-      frc.y = frc.y - diff.y * scale * pct;
-    }
-  }
-
-  //------------------------------------------------------------
-  void addRepulsionForce(particle p, float radius, float scale) {
-
-    // ----------- (1) make a vector of where this particle p is: 
-    PVector posOfForce;
-    posOfForce.set(p.pos.x, p.pos.y);
-
-    // ----------- (2) calculate the difference & length 
-
-    PVector diff	= pos - posOfForce;
-    float length	= diff.length();
-
-    // ----------- (3) check close enough
-
-      bool bAmCloseEnough = true;
-    if (radius > 0) {
-      if (length > radius) {
-        bAmCloseEnough = false;
-      }
-    }
-
-    // ----------- (4) if so, update force
-
-      if (bAmCloseEnough == true) {
-      float pct = 1 - (length / radius);  // stronger on the inside
-      diff.normalize();
-      frc.x = frc.x + diff.x * scale * pct;
-      frc.y = frc.y + diff.y * scale * pct;
-      p.frc.x = p.frc.x - diff.x * scale * pct;
-      p.frc.y = p.frc.y - diff.y * scale * pct;
-    }
-  }
-  
-  
-  //------------------------------------------------------------
-  void addAttractionForce(particle p, float radius, float scale) {
-
-    // ----------- (1) make a vector of where this particle p is: 
-    PVector posOfForce;
-    posOfForce.set(p.pos.x, p.pos.y);
-
-    // ----------- (2) calculate the difference & length 
-
-    PVector diff	= pos - posOfForce;
-    float length	= diff.length();
-
-    // ----------- (3) check close enough
-
-      bool bAmCloseEnough = true;
-    if (radius > 0) {
-      if (length > radius) {
-        bAmCloseEnough = false;
-      }
-    }
-
-    // ----------- (4) if so, update force
-
-      if (bAmCloseEnough == true) {
-      float pct = 1 - (length / radius);  // stronger on the inside
-      diff.normalize();
-      frc.x = frc.x - diff.x * scale * pct;
-      frc.y = frc.y - diff.y * scale * pct;
-      p.frc.x = p.frc.x + diff.x * scale * pct;
-      p.frc.y = p.frc.y + diff.y * scale * pct;
-    }
-  }
-  
-*/
-
   //------------------------------------------------------------
   void addDampingForce() {
 
@@ -195,7 +61,7 @@ class particle
 
   //------------------------------------------------------------
   void draw() {
-    ellipse(pos.x, pos.y, 6,6);
+    ellipse(pos.x, pos.y, 9,9);
   }
 
 

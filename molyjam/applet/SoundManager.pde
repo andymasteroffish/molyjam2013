@@ -73,6 +73,12 @@ class SoundManager {
     klaxon.rewind();
     klaxon.play();
   }
+  void stopKlaxon(){
+    if (klaxon.isPlaying()){
+     klaxon.pause(); 
+    }
+  }
+  
   void playTypewriter() {
     typewriter.play();
   }
