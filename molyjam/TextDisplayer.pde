@@ -21,6 +21,9 @@ class TextDisplayer {
   float interval;
 
   float delayBetweenPassages;
+  
+  float curEmotionalLevel;
+  float emotionalCutOff;
 
   void setup() {
     interval = 6000;
@@ -57,8 +60,11 @@ class TextDisplayer {
     }
   }
 
-  void updateShowEmotionalText(boolean _showEmotionalText) {
+  void updateShowEmotionalText(boolean _showEmotionalText, float _curEmotionalLevel, float _emotionalCutOff) {
     showEmotionalText = _showEmotionalText;
+    
+    curEmotionalLevel = _curEmotionalLevel;
+    emotionalCutOff = _emotionalCutOff;
   }
 
   void draw() {

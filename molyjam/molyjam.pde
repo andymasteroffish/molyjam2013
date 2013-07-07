@@ -96,7 +96,7 @@ void update() {
   
     //check what kind of text we should be showing
     boolean showEmotionalText = guy.emotionalLevel > guy.emotionalLevelCutOff;
-    textDisplayer.updateShowEmotionalText( showEmotionalText );
+    textDisplayer.updateShowEmotionalText( showEmotionalText, guy.emotionalLevel, guy.emotionalLevelCutOff );
   
     //update emotion pick ups
     for (int i=emotions.size()-1; i>=0; i--) {
@@ -177,6 +177,13 @@ void keyPressed() {
   //tetsing EMOTIONS
   if (key == '5') {
     spawnEmotion();
+  }
+  
+  if (key == '-'){
+    guy.emotionalLevel = 100;
+  }
+  if (key == '='){
+    guy.emotionalLevel = 0;
   }
 
 //  if (key == 's') {
