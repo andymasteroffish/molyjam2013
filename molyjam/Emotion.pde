@@ -14,7 +14,7 @@ class Emotion {
     pic = _pic;
 
     xPos = width+hitSize*2;
-    yPos = 140 + 10;
+    yPos = 140 ;
 
     speed = 100;
 
