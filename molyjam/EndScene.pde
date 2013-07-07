@@ -103,7 +103,6 @@ class EndScene {
     }
     
     if (phase == 2 || phase ==3){
-      println("this phase: "+phase);
       float thisAlpha = phase==2 ? fadeAlpha : 255-fadeAlpha;
       tint(255, thisAlpha);
       image(attributionPic, 142, 154);

@@ -45,7 +45,7 @@ TitleScene titleScene = new TitleScene();
 //end
 EndScene endScene = new EndScene();
 float gameTimer;
-float gameTime = 120;  //number of seconds in the game
+float gameTime = 5;//120;  //number of seconds in the game
 
 //sound manager
 SoundManager SM = new SoundManager();
@@ -229,6 +229,10 @@ void update() {
 
   if (gameState.equals("end")) {
     endScene.update(deltaTime);
+    println("phase "+endScene.phase);
+    if(endScene.phase == 5){
+      setup();
+    }
   }
 }
 
@@ -291,29 +295,29 @@ void keyPressed() {
 
 
   //DEBUG STUFF
-  if (key == 'd') {
-    showHidden = !showHidden;
-  }
-
-  if (keyCode == ENTER) {
-    guy.resetPlayer();
-  }
-
-  //tetsing EMOTIONS
-  if (key == '5') {
-    spawnEmotion();
-  }
+//  if (key == 'd') {
+//    showHidden = !showHidden;
+//  }
+//
+//  if (keyCode == ENTER) {
+//    guy.resetPlayer();
+//  }
+//
+//  //tetsing EMOTIONS
+//  if (key == '5') {
+//    spawnEmotion();
+//  }
 
 //  if (key == 'k') {
 //    endGame();
 //  }
 //
-  if (key == '1') {
-    guy.emotionalLevel += 10;
-  }
-  if (key=='2') {
-    guy.emotionalLevel -= 10;
-  }
+//  if (key == '1') {
+//    guy.emotionalLevel += 10;
+//  }
+//  if (key=='2') {
+//    guy.emotionalLevel -= 10;
+//  }
 //  
 //  if (key=='t') {
 //    warningText.trigger();
