@@ -223,13 +223,17 @@ void draw() {
     titleScene.drawTitle();
   }
   else if (gameState.equals("game") || gameState.equals("end")) {
+    
+    tint(255, map(gameTimer, 0, gameTime, 255, 0));
     bg.draw(playerTargetX);
+    
+    tint(255,255);
 
     guy.draw(showHidden);
 
     textDisplayer.draw();
 
-    stroke(0);
+    stroke(0,50);
     line(0, groundY, width, groundY);
 
     //draw the emotion pick ups

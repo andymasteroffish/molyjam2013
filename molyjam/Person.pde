@@ -280,10 +280,9 @@ class Person {
     particles[9].draw();
     particles[11].draw();
 
-    strokeWeight(2);
     for (int i = 0; i < springs.length; i++) {
       if (springs[i].showing) {
-        strokeWeight(2);
+        strokeWeight(4);
         stroke(10);
         springs[i].draw();
       }

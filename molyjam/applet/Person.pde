@@ -8,6 +8,8 @@ class Person {
   PImage curFacePic;
   PVector facePoint;
   float faceAngle;
+  
+  float pull = 0.3;  //how much to pull the player each frame
 
 
   MuscleKey[] muscleKeys = new MuscleKey[6];
@@ -15,48 +17,55 @@ class Person {
 
   int groundY;
   boolean onTheGround;
-  
+
   //emotions
   float emotionalLevel;
   float emotionalDrainPerSec;
   float emotionalLevelCutOff = 50;
 
-  void setup(int _groundY) {
+  SoundManager SM;
+
+  boolean collapsed;
+
+  void setup(int _groundY, SoundManager _SM) {
     facePics[0] = loadImage("pic/pmneuxSad.png");
     facePics[1] = loadImage("pic/pmneux1.png");
 
+    SM = _SM;
+
     thisScale = 35;   //how much to multiply everything by
-    
+
 
     groundY = _groundY;
-    
+
     emotionalLevel = 100;
-    emotionalDrainPerSec = 2;
+    emotionalDrainPerSec = 1;
 
     //particle thisParticle;
 
-    for (int i=0; i<particles.length; i++){
+    for (int i=0; i<particles.length; i++) {
       particles[i] = new particle();
     }
-    for (int i=0; i<springs.length; i++){
+    for (int i=0; i<springs.length; i++) {
       springs[i] = new spring();
     }
-    for (int i=0; i<muscleKeys.length; i++){
+    for (int i=0; i<muscleKeys.length; i++) {
       muscleKeys[i] = new MuscleKey();
     }
 
     resetPlayer();
-    
   }
-  
-  void resetPlayer(){
+
+  void resetPlayer() {
+    collapsed = false;
+
     float xOffset = 200;
     float yOffset = 100;
 
     float defaultSpringiness = 0.2f;
-    
+
     onTheGround = false;
-    
+
     int curParticle = 0;
     int curSpring  = 0;
 
@@ -83,10 +92,10 @@ class Person {
     //right leg
     particles[curParticle++].setInitialCondition(xOffset+6* thisScale, yOffset+6* thisScale, 0, 0);
     particles[curParticle++].setInitialCondition(xOffset+6* thisScale, yOffset+8* thisScale, 0, 0);
-    
+
     //set the ground for all springs
-    for (int i=0; i<particles.length; i++){
-      particles[i].groundY = groundY; 
+    for (int i=0; i<particles.length; i++) {
+      particles[i].groundY = groundY;
     }
 
     //put in the visible springs
@@ -152,7 +161,7 @@ class Person {
     muscleKeys[curMuscleKey++].setup('q', springs[17], false, particles[5]);
     muscleKeys[curMuscleKey++].setup('w', springs[8], false, null);
     muscleKeys[curMuscleKey++].setup('e', springs[25], true, particles[9] );
-    
+
     muscleKeys[curMuscleKey++].setup('i', springs[26], true, particles[11]);
     muscleKeys[curMuscleKey++].setup('o', springs[10], false, null);
     muscleKeys[curMuscleKey++].setup('p', springs[20], false, particles[7]);
@@ -164,18 +173,26 @@ class Person {
     }
   }
 
-  void update(float deltaTime) {
+  void update(float deltaTime, boolean stillInGame) {
     float stretchDist = 50;
-    
+
     //deal with the emotional drain
-    emotionalLevel -= emotionalDrainPerSec*deltaTime;
-    emotionalLevel = constrain(emotionalLevel, 0, 100);
-    curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
+    if (stillInGame){
+      emotionalLevel -= emotionalDrainPerSec*deltaTime;
+      emotionalLevel = constrain(emotionalLevel, 0, 100);
+      curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
+      //println("emotion "+emotionalLevel);
+    }
 
 
     //check the keys
+    boolean anyKeyIsDown = false;
     for (int i=0; i<muscleKeys.length; i++) {
       muscleKeys[i].update(deltaTime);
+      
+      if (muscleKeys[i].isDown){
+       anyKeyIsDown = true; 
+      }
     }
 
 
@@ -185,14 +202,21 @@ class Person {
       //particles[i].addRepulsionForce(mouseX, mouseY, 300, 0.7f);
     }
 
-    for (int i = 0; i < springs.length; i++) {
-      springs[i].update();
+    if (!collapsed) {
+      for (int i = 0; i < springs.length; i++) {
+        springs[i].update();
+      }
     }
 
     for (int i = 0; i < particles.length; i++) {
       particles[i].bounceOffWalls();
       particles[i].addDampingForce();
       particles[i].update();
+      
+      //pull the player
+      if (!collapsed && anyKeyIsDown){
+       particles[i].pos.x += pull; 
+      }
     }
 
     //set the face
@@ -203,30 +227,32 @@ class Person {
     facePoint = mathVector;
     //facePoint = (particles[0].pos.mult(2) +particles[1].pos)/3;    //favoring point 0
     faceAngle = atan2(particles[2].pos.y-particles[0].pos.y, particles[2].pos.x-particles[0].pos.x)-PI/2;
-    
-    
-    //checking for neck snap
-    PVector[] neckCheckPoints = new PVector[4];
-    neckCheckPoints[0] = particles[0].pos;
-    neckCheckPoints[1] = particles[5].pos;
-    neckCheckPoints[2] = particles[2].pos;
-    neckCheckPoints[3] = particles[7].pos;
-    if (!checkInPolygon(neckCheckPoints, particles[1].pos.x, particles[1].pos.y)) {
-      println("you broke his neck");
-      //put it back, honky
-      //reset the two head particles based on the bottom of the neck
-      particles[0].setInitialCondition(particles[2].pos.x, particles[2].pos.y- 2*thisScale, 0, 0);
-      particles[1].setInitialCondition(particles[2].pos.x, particles[2].pos.y- 1*thisScale, 0, 0);
 
-    }
-    
-    //check if he is on the ground
-    float groundDistToCount = 1;
-    if ( particles[5].pos.y >= groundY-groundDistToCount)  onTheGround = true;
-    if ( particles[7].pos.y >= groundY-groundDistToCount)  onTheGround = true;
-    
-    if (onTheGround){
-      resetPlayer();
+
+    if (!collapsed) {
+      //checking for neck snap
+      PVector[] neckCheckPoints = new PVector[4];
+      neckCheckPoints[0] = particles[0].pos;
+      neckCheckPoints[1] = particles[5].pos;
+      neckCheckPoints[2] = particles[2].pos;
+      neckCheckPoints[3] = particles[7].pos;
+      if (!checkInPolygon(neckCheckPoints, particles[1].pos.x, particles[1].pos.y)) {
+        println("you broke his neck");
+        //put it back, honky
+        //reset the two head particles based on the bottom of the neck
+        particles[0].setInitialCondition(particles[2].pos.x, particles[2].pos.y- 2*thisScale, 0, 0);
+        particles[1].setInitialCondition(particles[2].pos.x, particles[2].pos.y- 1*thisScale, 0, 0);
+      }
+
+      //check if he is on the ground
+      float groundDistToCount = 1;
+      if ( particles[5].pos.y >= groundY-groundDistToCount)  onTheGround = true;
+      if ( particles[7].pos.y >= groundY-groundDistToCount)  onTheGround = true;
+
+      if (onTheGround) {
+        resetPlayer();
+        SM.playGrunt();
+      }
     }
   }
 
@@ -270,10 +296,10 @@ class Person {
       //in dbeug, show numbers
       if (showDebug) {
         fill(200, 0, 0);
-          float xPos = (springs[i].particleA.pos.x + springs[i].particleB.pos.x)/2;
-          float yPos = (springs[i].particleA.pos.y + springs[i].particleB.pos.y)/2; 
-          String words = ""+i;
-          text (words, xPos, yPos);
+        float xPos = (springs[i].particleA.pos.x + springs[i].particleB.pos.x)/2;
+        float yPos = (springs[i].particleA.pos.y + springs[i].particleB.pos.y)/2; 
+        String words = ""+i;
+        text (words, xPos, yPos);
       }
     }
     strokeWeight(1);
@@ -285,26 +311,26 @@ class Person {
     image(curFacePic, -curFacePic.width/2, -curFacePic.height/2);
     popMatrix();
 
-    if (showDebug){
-      fill(0,0,255);
-      for (int i = 0; i < particles.length; i++){
-         String words = ""+i;
-         text (words, particles[i].pos.x, particles[i].pos.y);
+    if (showDebug) {
+      fill(0, 0, 255);
+      for (int i = 0; i < particles.length; i++) {
+        String words = ""+i;
+        text (words, particles[i].pos.x, particles[i].pos.y);
       }
     }
   }
-  
-  void earnEmotion(float val){
+
+  void earnEmotion(float val) {
     emotionalLevel += val;
   }
-  
-  void scroll(float scrollX){
-    for (int i=0; i<particles.length; i++){
+
+  void scroll(float scrollX) {
+    for (int i=0; i<particles.length; i++) {
       particles[i].pos.x += scrollX;
-    } 
+    }
   }
-  
-  
+
+
   boolean checkInPolygon(PVector[] p, float x, float y)
   {
     int i =0;
@@ -319,6 +345,15 @@ class Person {
         c = !c;
     }
     return c;
+  }
+
+  void collapse() {
+    collapsed = true;
+    
+    for (int i=0; i<particles.length; i++){
+     particles[i].vel = new PVector(0,0); 
+     particles[i].frc = new PVector(0,0);
+    }
   }
 }
 

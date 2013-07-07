@@ -7,15 +7,18 @@ class Emotion {
   boolean killMe;
   
   float value;
+  
+  PImage pic;
 
-  void setup() {
+  void setup(PImage _pic) {
+    pic = _pic;
 
     xPos = width+hitSize*2;
-    yPos = 145+50;
+    yPos = 140 ;
 
     speed = 100;
 
-    hitSize = 30;
+    hitSize = 38;
     
     value = 20;
 
@@ -38,8 +41,10 @@ class Emotion {
 
   void draw() {
 
+    image(pic, xPos-pic.width/2, yPos-pic.height/2);
     fill(20, 20, 180);
-    ellipse(xPos, yPos, hitSize, hitSize);
+    //ellipse(xPos, yPos, hitSize, hitSize);
+    
   }
   
   void scroll(float scrollX){

@@ -1,5 +1,5 @@
 class TextDisplayer {
-  int NUM_AREAS = 5;
+  int NUM_AREAS = 6;
   PFont emotional;
   PFont unemotional;
 
@@ -29,7 +29,7 @@ class TextDisplayer {
     interval = 6000;
     delayBetweenPassages = 5000;
 
-    emotional = loadFont("JosefinSans-24.vlw");
+    emotional = loadFont("JosefinSans-Bold-48.vlw");
     textFont(emotional, 24);
     textAlign(CENTER);
 
@@ -40,6 +40,7 @@ class TextDisplayer {
     allText[2].setup("church");
     allText[3].setup("fastFood");
     allText[4].setup("graduation");
+    allText[5].setup("graveyard");
 
     selectString();
     parsed = parseString(currentLine);

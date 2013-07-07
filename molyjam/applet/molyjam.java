@@ -31,7 +31,7 @@ public class molyjam extends PApplet {
  * Game By Ezra Schrage, Jane Friedhoff,                 *
  * Ben Johnson & Andy Wallace for Molyjam 2013          *
  ********************************************************/
- 
+
 
 
 //timing
@@ -45,6 +45,12 @@ ArrayList<Emotion> emotions = new ArrayList<Emotion>();
 float emotionSpawnTimer;
 float emotionMaxNextSpawnTime = 10;
 float emotionMinNextSpawnTime = 3;
+PImage[] emotionPics = new PImage[4];
+
+ArrayList<Burst> bursts = new ArrayList<Burst>();
+
+//emotion warning
+WarningText warningText = new WarningText();
 
 // background
 Background bg = new Background();
@@ -53,14 +59,19 @@ float playerTargetX;
 // text displayer
 TextDisplayer textDisplayer = new TextDisplayer();
 
+// title
+TitleScene titleScene = new TitleScene();
+
+//end
+EndScene endScene = new EndScene();
+float gameTimer;
+float gameTime = 120;  //number of seconds in the game
+
 //sound manager
 SoundManager SM = new SoundManager();
 Minim minim;
 
-//fade in/out timer for endgame + bonus screen
-float startMessageTimer;
-float intervalTimer;
-float fadeAlpha;
+
 
 
 int groundY;
@@ -70,10 +81,7 @@ boolean showHidden;
 //title stuff
 String gameState;
 PImage titlePic;
-PImage endingHighEmotions;
-PImage endingMedEmotions;
-PImage endingLowEmotions;
-PImage bonus;
+
 
 
 public void setup() {
@@ -85,9 +93,9 @@ public void setup() {
 
   groundY = height - 50;
 
-  guy.setup(groundY);
+  guy.setup(groundY, SM);
   playerTargetX = width/2;
-  
+
 
   showHidden = false;
 
@@ -98,74 +106,132 @@ public void setup() {
 
   minim = new Minim(this);
   SM.setup(minim);
-  
+
   //setup the title
   gameState = "title";
-  titlePic = loadImage("titleScreen.png");
+  titlePic = loadImage("/data/TitlePieces/EmptyBackground.png");
+  titleScene.setup(SM);
+
+  endScene.setup();
   
-  intervalTimer = 10000; // for reading end screen
+  warningText.setup();
+
+  //set emotion pick ups
+  for (int i=0; i<emotionPics.length; i++) {
+    String picName = "data/Pickups/pickup"+i+".png";
+    emotionPics[i] = loadImage(picName);
+  }
 }
 
-public void startGame(){
-    //start with some time before the first emotion spawn
+public void startGame() {
+  //start with some time before the first emotion spawn
   emotionSpawnTimer = emotionMaxNextSpawnTime;
-  
+
   bg.reset();
   guy.resetPlayer();
-  
+
+  tint(255, 255);
+
+  gameTimer = 0;
+
   gameState = "game";
+}
+
+public void endGame() {
+  gameState = "end";
+  endScene.start(guy.emotionalLevel);
+  guy.collapse();
+  textDisplayer.shouldShowAnyText = false;
 }
 
 public void update() {
   float deltaTime = ((float)millis()-prevFrameTime)/1000.0f;
   prevFrameTime = millis();
 
-  if (gameState.equals("title")){
+  if (gameState.equals("title")) {
     //fucking nothing right now goddamn
-  }else if (gameState.equals("game")){
+    titleScene.updateTitle();
+  }
+  else if (gameState.equals("game") || gameState.equals("end")) {
     guy.resetForces();
-  
-    guy.update(deltaTime);
-  
+
+    guy.update(deltaTime, gameState.equals("game"));
+    
+    if (guy.emotionalLevel < guy.emotionalLevelCutOff+20 && guy.emotionalLevel > guy.emotionalLevelCutOff && !warningText.active){
+      warningText.trigger();
+    }
+    else if (guy.emotionalLevel > guy.emotionalLevelCutOff+20){
+     warningText.active = false; 
+    }
+
     //check what kind of text we should be showing
     boolean showEmotionalText = guy.emotionalLevel > 50;
     textDisplayer.updateShowEmotionalText( showEmotionalText, guy.emotionalLevel, guy.emotionalLevelCutOff );
-  
+
     //update emotion pick ups
     for (int i=emotions.size()-1; i>=0; i--) {
       Emotion thisEmotion = emotions.get(i);
       thisEmotion.update(deltaTime, guy);
-  
+
       if (thisEmotion.killMe) {
-        emotions.remove(i);
+        //play sound
         SM.playemotionGet();
+
+        //create burtsts
+        for (int k=0; k<80; k++) {
+          Burst newBurst = new Burst();
+          newBurst.setup(thisEmotion.xPos, thisEmotion.yPos);
+          bursts.add(newBurst);
+        }
+
+        //actuall kill it
+        emotions.remove(i);
       }
     }
-  
+
+    //update the bursts
+    for (int i=bursts.size()-1; i>=0; i--) {
+      Burst thisBurst = bursts.get(i);
+      thisBurst.update(deltaTime);
+
+      if (thisBurst.killMe) {
+        bursts.remove(i);
+      }
+    }
+    
+    //update the warning
+    warningText.update();
+
     //is it time for a new emotion?
     emotionSpawnTimer -= deltaTime;
     if (emotionSpawnTimer <= 0) {
       spawnEmotion();
       emotionSpawnTimer = random(emotionMinNextSpawnTime, emotionMaxNextSpawnTime);
     }
-  
+
+    //chekc sounds
+    SM.update(showEmotionalText);
+
     //bg.updateBackground();
-  
+
     //check for scrolling (on his pelvis)
     float playerDistFromCenter = guy.particles[3].pos.x - playerTargetX;
-    if (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos) {
+    if ( (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos) && ( playerDistFromCenter < 0 || bg.pos.x >= bg.endPos)) {
       scroll(-playerDistFromCenter*0.1f);  //xeno to make it smoother
     }
-  } else if (gameState.equals("end")) {
-    // startmessagetimer needs to be set at the moment end is triggered
-    if (millis() > startMessageTimer + intervalTimer) {
-        fade("in");
-        if (fadeAlpha > 255) {
-          gameState = "bonus";  
-        }
+
+    //is it time to die?
+    if (gameState.equals("game")) {
+      gameTimer += deltaTime;
+      if ( (playerDistFromCenter > 0 && bg.pos.x < bg.endPos) || gameTimer >= gameTime) {
+        endGame();
+      }
     }
-  } else if (gameState.equals("bonus")) {
-    fade("out");      
+  } 
+
+
+  if (gameState.equals("end")) {
+    endScene.update(deltaTime);
   }
 }
 
@@ -173,59 +239,49 @@ public void draw() {
   update();
 
   background(255);
-  
-  if (gameState.equals("title")){
-    image(titlePic,0,0);
+
+  if (gameState.equals("title")) {
+    image(titlePic, 0, 0);
+    titleScene.drawTitle();
   }
-  else if (gameState.equals("game")){
+  else if (gameState.equals("game") || gameState.equals("end")) {
     bg.draw(playerTargetX);
-  
+
     guy.draw(showHidden);
-  
+
     textDisplayer.draw();
-  
+
     stroke(0);
     line(0, groundY, width, groundY);
-  
+
     //draw the emotion pick ups
     for (int i=0; i<emotions.size(); i++) {
       Emotion thisEmotion = emotions.get(i);
       thisEmotion.draw();
     }
-  } else if (gameState.equals("end")) {
-    if (guy.emotionalLevel < 33) {
-//      image(endingLowEmotions, 0, 0); 
-    } else if (guy.emotionalLevel >= 33 && guy.emotionalLevel < 66) {
-//      image(endingMedEmotions, 0, 0);
-    } else if (guy.emotionalLevel > 66) {
-//      image(endingHighEmotions, 0, 0);
+    //and their bursts
+    for (int i=0; i<bursts.size(); i++) {
+      Burst thisBurst = bursts.get(i);
+      thisBurst.draw();
     }
     
-    if (millis() > startMessageTimer + intervalTimer) {
-      noStroke();
-      fill(0, fadeAlpha);
-      rect(0, 0, width, height);
-      stroke(0);
-    }
-  } else if (gameState.equals("bonus")) {
-//    image(bonus, 0, 0);
-    noStroke();
-    fill(0, fadeAlpha);
-    rect(0, 0, width, height);
-    stroke(0);
+    //emotions warning
+    warningText.draw();
+  } 
+
+  if (gameState.equals("end")) {
+    endScene.draw();
   }
 }
 
 public void keyPressed() {
-  
-  if (gameState.equals("title")){
+
+  if (gameState.equals("title") &&  millis() > titleScene.startTime + titleScene.delaySubtitle + 1000) {
     startGame();
   }
-  else if (gameState.equals("game")){
+  else if (gameState.equals("game")) {
     guy.checkKeyDown(key);
   }
-  
-  
 
 
   //DEBUG STUFF
@@ -241,20 +297,34 @@ public void keyPressed() {
   if (key == '5') {
     spawnEmotion();
   }
+
+  if (key == 'k') {
+    endGame();
+  }
+
+  if (key == '-') {
+    guy.emotionalLevel = 0;
+  }
+  if (key=='=') {
+    guy.emotionalLevel = 100;
+  }
   
-//  if (key == ' ') {
-//    gameState = "end";  
-//  }
+  if (key=='t') {
+    warningText.trigger();
+  }
 
-//  if (key == 's') {
-//    SM.songDull.pause();
-//    SM.songEmotional.play();
-//  }
-//  if (key == 'd') {
-//    SM.songEmotional.pause();
-//    SM.songDull.play();
-//  }
+  //  if (key == ' ') {
+  //    gameState = "end";  
+  //  }
 
+  //  if (key == 's') {
+  //    SM.songDull.pause();
+  //    SM.songEmotional.play();
+  //  }
+  //  if (key == 'd') {
+  //    SM.songEmotional.pause();
+  //    SM.songDull.play();
+  //  }
 }
 
 public void keyReleased() {
@@ -269,35 +339,31 @@ public void scroll(float scrollX) {
     Emotion thisEmotion = emotions.get(i);
     thisEmotion.scroll(scrollX);
   }
+  for (int i=0; i<bursts.size(); i++) {
+    Burst thisBurst = bursts.get(i);
+    thisBurst.scroll(scrollX);
+  }
 }
 
 public void spawnEmotion() {
   Emotion newEmotion = new Emotion();
-  newEmotion.setup();
+  int randNum = (int)random(emotionPics.length);
+  newEmotion.setup(emotionPics[randNum]);
   emotions.add(newEmotion);
 }
 
-public void fade(String whichWay) {
- if (whichWay.equals("in")) {
-    if (millis() > startMessageTimer + intervalTimer) {
-      fadeAlpha++;
-    }
- } else if (whichWay.equals("out")) {
-    fadeAlpha--;
- } 
-}
 
 class Background {
   PVector pos;
 
-  PImage[] backgroundPics = new PImage[5];
-  String[] places = new String[5];
+  PImage[] backgroundPics = new PImage[6];
+  String[] places = new String[6];
 
   //PImage myBackground;  //kill me
 
   //the backgrounds for this round
-//  PImage[] theseBackgrounds = new PImage[6];
-//  String[] thesePlaces = new String[6];
+  //  PImage[] theseBackgrounds = new PImage[6];
+  //  String[] thesePlaces = new String[6];
 
 
 
@@ -308,22 +374,22 @@ class Background {
   int currentIndex;
 
   float startPos;
+  float endPos;
 
 
   // 700 x 600
 
   public void setup() {
-    startPos = -15;
-    
 
     loadImages();
 
-    
+    startPos = -15;
+
+    endPos = -backgroundPics[0].width* (backgroundPics.length-1) + 30;
   }
-  
-  public void reset(){
+
+  public void reset() {
     pos = new PVector(startPos, 0);
-    
   }
 
 
@@ -334,25 +400,24 @@ class Background {
   public void draw(float playerTargetX) {
     //image(myBackground, pos.x, pos.y);
     //image(myBackground, 10, 10, myBackground.width/8, myBackground.height/8);
-    
+
     //draw the ones on screen
     int curWidth = 0;
-    for (int i=0; i<backgroundPics.length; i++){
+    for (int i=0; i<backgroundPics.length; i++) {
       int xPos = (int)pos.x + curWidth;
-      
-      if (xPos > -backgroundPics[i].width && xPos < width){
-        image(backgroundPics[i], xPos, pos.y); 
+
+      if (xPos > -backgroundPics[i].width && xPos < width) {
+        image(backgroundPics[i], xPos, pos.y);
       }
-      
-      
+
+
       //if this is the one the player is on, give that title to the text display
-      if (xPos < playerTargetX && xPos+backgroundPics[i].width > playerTargetX){
+      if (xPos < playerTargetX && xPos+backgroundPics[i].width > playerTargetX) {
         textDisplayer.updateText(places[i]);
       }
-      
-      
+
+
       curWidth += backgroundPics[i].width;
-      
     }
   }
 
@@ -363,15 +428,86 @@ class Background {
     backgroundPics[2] = loadImage("graduation.png");
     backgroundPics[3] = loadImage("church_interior.png");
     backgroundPics[4] = loadImage("hospital.png");
+    backgroundPics[5] = loadImage("graveyard.png");
 
     places[0] = "childhood";
     places[1] = "fastFood";
     places[2] = "graduation";
     places[3] = "church";
     places[4] = "hospital";
+    places[5] = "graveyard";
+  }
+}
+
+class Burst {
+
+  
+
+  PVector pos;
+  PVector vel;
+
+  float grav = 0.1f;
+  float fric = 0.97f;
+
+  int col;
+
+  float colR, colG, colB, colA;
+  boolean killMe;
+  
+  float startTime = 1.5f;
+  float timer;
+
+  public void setup(float startX, float startY) {
+    pos = new PVector(startX, startY);
+    
+    killMe = false;
+
+    colR = random(255);
+    colG = random(255);
+    colB = random(255);
+    
+    timer = startTime;
+    
+    //give it a random angle and power
+    float power = random(2,7);
+    float angle = random(TWO_PI);
+    
+    vel = new PVector(0,0);
+    vel.x = cos(angle)*power;
+    vel.y = sin(angle)*power;
+  }
+  
+  public void update(float deltaTime){
+    
+    timer -= deltaTime;
+    
+    if (timer<0){
+      killMe = true; 
+    }
+    
+    colA = map(timer, startTime, 0, 255, 0);  
+    
+    vel.y+=grav;
+    vel.x *= fric;
+    vel.y *= fric;
+    
+    pos.x += vel.x;
+    pos.y += vel.y;
+    
     
   }
-
+  
+  public void draw(){
+    float drawSize = 4;
+    fill(colR, colG, colB, colA);
+    noStroke();
+    ellipse(pos.x, pos.y, drawSize, drawSize);
+  }
+  
+  public void scroll(float scrollX){
+    pos.x+=scrollX;
+  }
+  
 }
 
 class Emotion {
@@ -383,15 +519,18 @@ class Emotion {
   boolean killMe;
   
   float value;
+  
+  PImage pic;
 
-  public void setup() {
+  public void setup(PImage _pic) {
+    pic = _pic;
 
     xPos = width+hitSize*2;
-    yPos = 145+50;
+    yPos = 140 ;
 
     speed = 100;
 
-    hitSize = 30;
+    hitSize = 38;
     
     value = 20;
 
@@ -414,12 +553,142 @@ class Emotion {
 
   public void draw() {
 
+    image(pic, xPos-pic.width/2, yPos-pic.height/2);
     fill(20, 20, 180);
-    ellipse(xPos, yPos, hitSize, hitSize);
+    //ellipse(xPos, yPos, hitSize, hitSize);
+    
   }
   
   public void scroll(float scrollX){
     xPos+=scrollX;
+  }
+}
+
+class EndScene {
+
+  PImage endBGPic;
+  
+  PImage[] endPics = new PImage[3];
+  PVector[] endPicsOffsets = new PVector[3];
+  int curEndPic;
+  
+  
+  PImage creditsPic, attributionPic;
+
+
+  //fade in/out timer for endgame + bonus screen
+  float startMessageTimer;
+  float intervalTimer = 10000;
+
+  float fadeAlpha;
+  float fadeTime = 7;
+  float pauseTime = 10;
+  float fadeTimer;
+  
+  boolean fadeIn;
+  
+  int phase;
+
+
+  public void setup() {
+
+    endBGPic = loadImage("data/EndPieces/EndBG.png");
+    endPics[0] = loadImage("data/EndPieces/EndEmotional.png");
+    endPics[1] = loadImage("data/EndPieces/EndSemiEmotional.png");
+    endPics[2] = loadImage("data/EndPieces/EndUnemotional.png");
+
+    endPicsOffsets[0] = new PVector(114,171);
+    endPicsOffsets[1] = new PVector(114, 171);
+    endPicsOffsets[2] = new PVector(114, 183);
+
+    creditsPic = loadImage("data/EndPieces/Credits.png");
+    attributionPic = loadImage("data/EndPieces/Attribution.png");
+  }
+
+  public void start(float emotionalLevel) {
+    curEndPic = 0; 
+    
+    phase = 0;
+    
+    if (emotionalLevel < 70){
+      curEndPic = 1; 
+    }
+    if (emotionalLevel < 30){
+      curEndPic = 2;
+    }
+
+    fadeAlpha = 0;
+    fadeTimer = 0;
+    fadeIn = true;
+
+    //showingBonus = false;
+  }
+
+
+  public void update(float deltaTime) {
+
+    fadeTimer+=deltaTime;
+
+    if (fadeIn) {
+      fadeAlpha = map(fadeTimer, 0, fadeTime, 0, 255);
+      fadeAlpha = constrain(fadeAlpha, 0, 255);
+      if (fadeTimer >= fadeTime + pauseTime && phase<4) {
+        pauseTime = 5;
+        phase++;
+        fadeTimer = 0;
+        fadeAlpha = 0;
+      }
+    }
+//    else {
+//      fadeAlpha = map(fadeTimer, 0, fadeTime, 255, 0);
+//    }
+  }
+
+
+  public void draw() {
+
+    if (phase == 0){
+      tint(255, fadeAlpha);
+    }else{
+      tint(255, 255);
+    }
+    image(endBGPic, 0, 0);
+    
+    
+    if (phase == 0 || phase == 1){
+      float thisAlpha = phase == 0 ? fadeAlpha : 255-fadeAlpha;
+      tint(255, thisAlpha);
+      image(endPics[curEndPic], endPicsOffsets[curEndPic].x, endPicsOffsets[curEndPic].y);
+    }
+    
+    
+    if (phase == 1 || phase ==2){
+      float thisAlpha = phase==1 ? fadeAlpha : 255-fadeAlpha;
+      tint(255, thisAlpha);
+      image(creditsPic, 142, 154);
+    }
+    
+    if (phase == 2 || phase ==3){
+      println("this phase: "+phase);
+      float thisAlpha = phase==2 ? fadeAlpha : 255-fadeAlpha;
+      tint(255, thisAlpha);
+      image(attributionPic, 142, 154);
+    }
+
+    tint(255, 255);
+  }
+
+
+
+  public void fade(String whichWay) {
+    if (whichWay.equals("in")) {
+      if (millis() > startMessageTimer + intervalTimer) {
+        fadeAlpha++;
+      }
+    } 
+    else if (whichWay.equals("out")) {
+      fadeAlpha--;
+    }
   }
 }
 
@@ -508,6 +777,8 @@ class Person {
   PImage curFacePic;
   PVector facePoint;
   float faceAngle;
+  
+  float pull = 0.3f;  //how much to pull the player each frame
 
 
   MuscleKey[] muscleKeys = new MuscleKey[6];
@@ -515,48 +786,55 @@ class Person {
 
   int groundY;
   boolean onTheGround;
-  
+
   //emotions
   float emotionalLevel;
   float emotionalDrainPerSec;
   float emotionalLevelCutOff = 50;
 
-  public void setup(int _groundY) {
+  SoundManager SM;
+
+  boolean collapsed;
+
+  public void setup(int _groundY, SoundManager _SM) {
     facePics[0] = loadImage("pic/pmneuxSad.png");
     facePics[1] = loadImage("pic/pmneux1.png");
 
+    SM = _SM;
+
     thisScale = 35;   //how much to multiply everything by
-    
+
 
     groundY = _groundY;
-    
+
     emotionalLevel = 100;
-    emotionalDrainPerSec = 2;
+    emotionalDrainPerSec = 1;
 
     //particle thisParticle;
 
-    for (int i=0; i<particles.length; i++){
+    for (int i=0; i<particles.length; i++) {
       particles[i] = new particle();
     }
-    for (int i=0; i<springs.length; i++){
+    for (int i=0; i<springs.length; i++) {
       springs[i] = new spring();
     }
-    for (int i=0; i<muscleKeys.length; i++){
+    for (int i=0; i<muscleKeys.length; i++) {
       muscleKeys[i] = new MuscleKey();
     }
 
     resetPlayer();
-    
   }
-  
-  public void resetPlayer(){
+
+  public void resetPlayer() {
+    collapsed = false;
+
     float xOffset = 200;
     float yOffset = 100;
 
     float defaultSpringiness = 0.2f;
-    
+
     onTheGround = false;
-    
+
     int curParticle = 0;
     int curSpring  = 0;
 
@@ -583,10 +861,10 @@ class Person {
     //right leg
     particles[curParticle++].setInitialCondition(xOffset+6* thisScale, yOffset+6* thisScale, 0, 0);
     particles[curParticle++].setInitialCondition(xOffset+6* thisScale, yOffset+8* thisScale, 0, 0);
-    
+
     //set the ground for all springs
-    for (int i=0; i<particles.length; i++){
-      particles[i].groundY = groundY; 
+    for (int i=0; i<particles.length; i++) {
+      particles[i].groundY = groundY;
     }
 
     //put in the visible springs
@@ -652,7 +930,7 @@ class Person {
     muscleKeys[curMuscleKey++].setup('q', springs[17], false, particles[5]);
     muscleKeys[curMuscleKey++].setup('w', springs[8], false, null);
     muscleKeys[curMuscleKey++].setup('e', springs[25], true, particles[9] );
-    
+
     muscleKeys[curMuscleKey++].setup('i', springs[26], true, particles[11]);
     muscleKeys[curMuscleKey++].setup('o', springs[10], false, null);
     muscleKeys[curMuscleKey++].setup('p', springs[20], false, particles[7]);
@@ -664,18 +942,26 @@ class Person {
     }
   }
 
-  public void update(float deltaTime) {
+  public void update(float deltaTime, boolean stillInGame) {
     float stretchDist = 50;
-    
+
     //deal with the emotional drain
-    emotionalLevel -= emotionalDrainPerSec*deltaTime;
-    emotionalLevel = constrain(emotionalLevel, 0, 100);
-    curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
+    if (stillInGame){
+      emotionalLevel -= emotionalDrainPerSec*deltaTime;
+      emotionalLevel = constrain(emotionalLevel, 0, 100);
+      curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
+      //println("emotion "+emotionalLevel);
+    }
 
 
     //check the keys
+    boolean anyKeyIsDown = false;
     for (int i=0; i<muscleKeys.length; i++) {
       muscleKeys[i].update(deltaTime);
+      
+      if (muscleKeys[i].isDown){
+       anyKeyIsDown = true; 
+      }
     }
 
 
@@ -685,14 +971,21 @@ class Person {
       //particles[i].addRepulsionForce(mouseX, mouseY, 300, 0.7f);
     }
 
-    for (int i = 0; i < springs.length; i++) {
-      springs[i].update();
+    if (!collapsed) {
+      for (int i = 0; i < springs.length; i++) {
+        springs[i].update();
+      }
     }
 
     for (int i = 0; i < particles.length; i++) {
       particles[i].bounceOffWalls();
       particles[i].addDampingForce();
       particles[i].update();
+      
+      //pull the player
+      if (!collapsed && anyKeyIsDown){
+       particles[i].pos.x += pull; 
+      }
     }
 
     //set the face
@@ -703,30 +996,32 @@ class Person {
     facePoint = mathVector;
     //facePoint = (particles[0].pos.mult(2) +particles[1].pos)/3;    //favoring point 0
     faceAngle = atan2(particles[2].pos.y-particles[0].pos.y, particles[2].pos.x-particles[0].pos.x)-PI/2;
-    
-    
-    //checking for neck snap
-    PVector[] neckCheckPoints = new PVector[4];
-    neckCheckPoints[0] = particles[0].pos;
-    neckCheckPoints[1] = particles[5].pos;
-    neckCheckPoints[2] = particles[2].pos;
-    neckCheckPoints[3] = particles[7].pos;
-    if (!checkInPolygon(neckCheckPoints, particles[1].pos.x, particles[1].pos.y)) {
-      println("you broke his neck");
-      //put it back, honky
-      //reset the two head particles based on the bottom of the neck
-      particles[0].setInitialCondition(particles[2].pos.x, particles[2].pos.y- 2*thisScale, 0, 0);
-      particles[1].setInitialCondition(particles[2].pos.x, particles[2].pos.y- 1*thisScale, 0, 0);
 
-    }
-    
-    //check if he is on the ground
-    float groundDistToCount = 1;
-    if ( particles[5].pos.y >= groundY-groundDistToCount)  onTheGround = true;
-    if ( particles[7].pos.y >= groundY-groundDistToCount)  onTheGround = true;
-    
-    if (onTheGround){
-      resetPlayer();
+
+    if (!collapsed) {
+      //checking for neck snap
+      PVector[] neckCheckPoints = new PVector[4];
+      neckCheckPoints[0] = particles[0].pos;
+      neckCheckPoints[1] = particles[5].pos;
+      neckCheckPoints[2] = particles[2].pos;
+      neckCheckPoints[3] = particles[7].pos;
+      if (!checkInPolygon(neckCheckPoints, particles[1].pos.x, particles[1].pos.y)) {
+        println("you broke his neck");
+        //put it back, honky
+        //reset the two head particles based on the bottom of the neck
+        particles[0].setInitialCondition(particles[2].pos.x, particles[2].pos.y- 2*thisScale, 0, 0);
+        particles[1].setInitialCondition(particles[2].pos.x, particles[2].pos.y- 1*thisScale, 0, 0);
+      }
+
+      //check if he is on the ground
+      float groundDistToCount = 1;
+      if ( particles[5].pos.y >= groundY-groundDistToCount)  onTheGround = true;
+      if ( particles[7].pos.y >= groundY-groundDistToCount)  onTheGround = true;
+
+      if (onTheGround) {
+        resetPlayer();
+        SM.playGrunt();
+      }
     }
   }
 
@@ -770,10 +1065,10 @@ class Person {
       //in dbeug, show numbers
       if (showDebug) {
         fill(200, 0, 0);
-          float xPos = (springs[i].particleA.pos.x + springs[i].particleB.pos.x)/2;
-          float yPos = (springs[i].particleA.pos.y + springs[i].particleB.pos.y)/2; 
-          String words = ""+i;
-          text (words, xPos, yPos);
+        float xPos = (springs[i].particleA.pos.x + springs[i].particleB.pos.x)/2;
+        float yPos = (springs[i].particleA.pos.y + springs[i].particleB.pos.y)/2; 
+        String words = ""+i;
+        text (words, xPos, yPos);
       }
     }
     strokeWeight(1);
@@ -785,26 +1080,26 @@ class Person {
     image(curFacePic, -curFacePic.width/2, -curFacePic.height/2);
     popMatrix();
 
-    if (showDebug){
-      fill(0,0,255);
-      for (int i = 0; i < particles.length; i++){
-         String words = ""+i;
-         text (words, particles[i].pos.x, particles[i].pos.y);
+    if (showDebug) {
+      fill(0, 0, 255);
+      for (int i = 0; i < particles.length; i++) {
+        String words = ""+i;
+        text (words, particles[i].pos.x, particles[i].pos.y);
       }
     }
   }
-  
-  public void earnEmotion(float val){
+
+  public void earnEmotion(float val) {
     emotionalLevel += val;
   }
-  
-  public void scroll(float scrollX){
-    for (int i=0; i<particles.length; i++){
+
+  public void scroll(float scrollX) {
+    for (int i=0; i<particles.length; i++) {
       particles[i].pos.x += scrollX;
-    } 
+    }
   }
-  
-  
+
+
   public boolean checkInPolygon(PVector[] p, float x, float y)
   {
     int i =0;
@@ -819,6 +1114,15 @@ class Person {
         c = !c;
     }
     return c;
+  }
+
+  public void collapse() {
+    collapsed = true;
+    
+    for (int i=0; i<particles.length; i++){
+     particles[i].vel = new PVector(0,0); 
+     particles[i].frc = new PVector(0,0);
+    }
   }
 }
 
@@ -883,6 +1187,15 @@ class PlaceText {
         refillEmotionalGraduationText();
       }
     }
+
+    if (area.equals("graveyard")) {
+      if (dullText.size() == 0) {
+        refillDullGraveyardText();
+      }
+      if (emotionalText.size() == 0) {
+        refillEmotionalGraveyardText();
+      }
+    }
   }
 
   public String getDullText() {
@@ -908,48 +1221,47 @@ class PlaceText {
 
     return returnText;
   }
-  
-  
-  
+
+
+
   public void refillEmotionalChildhoodText() {
     emotionalText.clear();
 
     emotionalText.add("A butterfly lands on a flower, the colors of the two combining to form the most gorgeous thing you've ever seen. For the first time, you know what true sadness is.");
-
     emotionalText.add("Your father has purchased you a red ball for your birthday. You begin to realize just how many emotions there really are in the world, and how much you have to learn.");
-
-    emotionalText.add("When you got an A on an assignment, you immediately think, 'Am I really as good or better than everyone else here? Who can make that decision? Can anyone?' You ponder this, lost in thought as you accidentally get locked in school again.");
-
-    emotionalText.add("You see a car drive by your house. Are they on their way home? To a wedding? A funeral? Both? Could anyone handle the number of emotions a person must feel to attend a wedding/funeral? Part of you hopes to never find out, but part of you does.");
-
-    emotionalText.add("A bully beats you up after school. But what hurts more than the punches is not your pain, but thinking about the pain he must feel that he became a bully. Who, really, is suffering more?");
-
-    emotionalText.add("As you successfully use the toilet for the first time, you consider how lonely your potty will feel. How sad it will be that no one will ever use it again, that it will be a relic of your, and only your, childhood. This keeps you up for three nights.");
+    emotionalText.add("In school, you thought about how grades could possibly be the measure of a person. What matters more, a person\u2019s intelligence, or their emotions? You weep into your desk.");
+    emotionalText.add("A bully beats you up after school. But what really hurts is thinking about the pain he must feel on the inside. Who, really, is suffering more?");
+    emotionalText.add("When you are toilet trained, you think of how lonely your potty will feel, replaced and obsolete. The despair keeps you up for three nights.");
+    emotionalText.add("Your mother tells you that she will love you forever. You hug her for hours, refusing to let go, tears in your eyes.");
   }
 
 
   public void refillDullChildhoodText() {
     dullText.clear();
-    
-    //println("fill it you dull child");
 
-    dullText.add("Your dad gives you a red ball for your birthday. You are happy that you can utilize it for exercise, as well as appreciating the difficulty in manufacturing a completely circular ball. You nod to your father.");
+    dullText.add("Your dad gives you a red ball for your birthday. You are happy that you can utilize it for exercise, as well as appreciating the difficulty in manufacturing a perfectly circular ball.");
     dullText.add("As a butterfly lands on a flower, you don't know whether to crush in order to rid the world of bugs or let it be devoured by some other insect. Bugs have no place in a civilized society.");
+    dullText.add("The children around you are drawing pictures of animals and houses. You have constructed a spreadsheet of your allowance for 20 weeks.");
+    dullText.add("For the first time, you experience pain as you trip and scrape your knee. You vow to never feel anything ever again.");
+    dullText.add("While others have real and imaginary friends, you have something better. Solitude.");
+    dullText.add("Your mother tells you that she will love you forever. No one can live forever, so she must be lying.");
   }
 
 
   public void refillEmotionalHospitalText() {
     emotionalText.clear();
 
-    emotionalText.add("Hundreds of millions of years from now, the sun will die out, and there will be no more sunsets. \"The people of the future will never be as emotionally fulfilled as us,\" you think.");
-    emotionalText.add("'What if everyone can feel more than I can?' This brings tears to your eyes.");
+    emotionalText.add("Hundreds of millions of years from now, the sun will die out, and there will be no more sunsets. You weep for the people of the future.");
+    emotionalText.add("You wonder if everyone else can feel more than you can. This brings tears to your eyes.");
+    emotionalText.add("A doctor is giving a lollipop to a sick little girl. The psychiatrist examines you after you begin crying hysterically in the lobby.");
   }
 
   public void refillDullHospitalText() {
     dullText.clear();
 
-    dullText.add("You stare at the dead and dying in the hospital, wondering just where all their stuff goes after they die. Does the hospital get it? Do they return it to the family. These are important things to consider.");
+    dullText.add("You wonder where the property of all the dead patients go after they die. Does the hospital get it or do they return it to the family? These are important things to consider.");
     dullText.add("You see a mother weeping over the body of her child. If you had the strength, you would go up to her, put your hand on her shoulder, and tell her to compose herself in public.");
+    dullText.add("You consider how many elderly people are in this hospital. You wish that money could be spent on something important, like building a strip mall.");
   }
 
 
@@ -958,14 +1270,16 @@ class PlaceText {
     emotionalText.clear();
 
     emotionalText.add("You begin to think of how a child must feel when they are separated from their mother. Children, you realize, have much to teach us.");
-    emotionalText.add("You watch as the couple before you exchange vows. Through your life, you thought that you had potentially cried all the tears you ever could. You now know that you have, if ");
+    emotionalText.add("You watch as the bride and groom before you exchange vows. You wail loudly at the beauty of two people happily together forever.");
+    emotionalText.add("How many emotions can a person feel at a wedding, a funeral, or both at the same time? Part of you hopes to never find out, but part of you does.");
   }
 
   public void refillDullChurchText() {
     dullText.clear();
 
-    dullText.add("As you walk by a funeral and see dozens of people weeping, you think about watering your cactus. You then remember you let it wither from neglect. This does not bother you.");
-    dullText.add("When you hear about your best friend getting a divorce, you are sad to think of how only one of them will be able to claim their child as a dependent.");
+    dullText.add("Entering the vast cathedral, you give a sigh and think of how much money they could have been saved if it were a simple concrete building. Spacial efficiency is next to godliness, after all.");
+    dullText.add("When you hear about your best friend getting a divorce, you become concerned. Only one of them will be able to claim their child as a dependent now.");
+    dullText.add("The bride is slow dancing with her father, both crying into the other's shoulder. You are ashamed of their inability to keep their feelings to themselves.");
   }
 
 
@@ -974,14 +1288,19 @@ class PlaceText {
     emotionalText.clear();
 
     emotionalText.add("As you watch a boy play with a puppy, you become stricken with grief.");
-    emotionalText.add("You know that each one of these hamburgers is mostly the same, but some part of them is slightly different. They are each their own, unique hamburger, enjoyed by their own unique person, in a unique location, all across the world. Your hamburger is now filled with tears and must be sent back.");
+    emotionalText.add("Each one of these hamburgers is a unique hamburger, enjoyed by their own unique person, in a unique location, all across the world. Your hamburger is now filled with tears.");
+    emotionalText.add("You wonder how you will spend your first paycheck. Tears in your eyes, you decide it should be donated to a rainbow preservation society.");
+    emotionalText.add("Someone likes you enough to hire you as a fry cook. This knowledge becomes overwhelming and induces a combination of elation and dread.");
+    emotionalText.add("You consider the noble sacrifice a potato makes to become a french fry. You feel guilty for enjoying your lunch.");
   }
 
   public void refillDullFastFoodText() {
     dullText.clear();
-
-    dullText.add("You see children laughing and playing without a care in the world, free from the oppression of responsibilities as the warm sun shines down. 'Good,' you think, 'my daily Vitamin D requirements have been met. Back inside.'");
-    dullText.add("You write a review for the last video game you played and end it with 'but the graphics were next-gen, so it's worth purchasing.'");
+    dullText.add("You see children laughing and playing without a care in the world as the warm sun shines down. You are sickened.");
+    dullText.add("You decide to purchase a game because the graphics look next-gen. You\u2019re sure the gameplay will follow.");
+    dullText.add("You receive your first paycheck and decide to spend it on a sheet of stamps. Forever stamps will only become more valuable over time.");
+    dullText.add("All the food you eat came from some animal or plant, slaughtered just for you. Their sacrifice pleases you.");
+    dullText.add("As you walk down the street, you see a couple holding hands. Their obstruction of the sidewalk makes you furious.");
   }
 
 
@@ -989,17 +1308,33 @@ class PlaceText {
     emotionalText.clear();
 
     emotionalText.add("As you microwave your dinner for the evening, you see your rotating food as a representation for man's struggle to find good in the world. You are not sure you can eat such a perfect metaphor now.");
-    emotionalText.add("After completing a game with cutting edge graphics, you feel overwhelmed with the sadness thinking about how the artists of the game will never match the beauty of a rainbow.");
+    emotionalText.add("After completing a game with cutting edge graphics, you feel overwhelmed with sadness. The artists of the game will never match the beauty of a rainbow.");
+    emotionalText.add("You have earned your degree in psychology, the study of emotions. But you never studied just how touching a family hugging could be. You diploma becomes wet with tears.");
   }
 
   public void refillDullGraduationText() {
     dullText.clear();
 
-    dullText.add("As a bright rainbow shines over the a hill, creating a picturesque view of a nature, you shut the blinds and play another game of solitaire.");
-    dullText.add("As you step up to the podium to receive your degree in accounting, you nod your head in acknowledgment to your teachers and friends, happy you never formed a single connection to anyone. There is no time for friendship in this world.");
+    dullText.add("A bright rainbow shines over a grazing fawn on a hill. You shut the blinds to play another game of solitaire.");
+    dullText.add("As you receive your degree in accounting, you think about your job prospects. There is no time for friendship in this world.");
+    dullText.add("Your graduating class cheers for their accomplishments. You refuse to engage in any merriment, content to nod solemnly.");
   }
-  
 
+  public void refillEmotionalGraveyardText() {
+    emotionalText.clear();
+
+    emotionalText.add("Looking at all the tombstones, you realize the dead outnumber the living. You vow to have as many emotions as they did before you die.");
+    emotionalText.add("Grass and colorful flowers grow above the dead in the ground. Flowers, you realize, have much to teach us.");
+    emotionalText.add("If there were a zombie apocalypse, you\u2019re not sure you would fight back. After all, aren\u2019t zombies people too?");
+  }
+
+  public void refillDullGraveyardText() {
+    dullText.clear();
+
+    dullText.add("This graveyard would be the perfect spot for a Walmart. The waste disappoints you.");
+    dullText.add("Funerals are very upsetting to you. All the work being missed right now, it fills you with disgust.");
+    dullText.add("If you were immortal, you know exactly what you would do. Buy an island and live alone forever.");
+  }
 }
 
 
@@ -1008,51 +1343,91 @@ class SoundManager {
 
   AudioPlayer songDull;
   AudioPlayer songEmotional;
-  
+
   AudioPlayer emotionGet;
   AudioPlayer grunt;
-  AudioPlayer startGame;
+  //AudioPlayer startGame;
   
+  AudioPlayer typewriter;
+  AudioPlayer whoosh1;
+  AudioPlayer whoosh2;
+  AudioPlayer thunder;
+
   Minim minim;
-  
-  
-  public void setup(Minim _minim){
+
+
+  public void setup(Minim _minim) {
     minim = _minim;
-    
+
     //music
     songDull = minim.loadFile("audio/dull.mp3", 2048);
     songDull.loop();
-    
+
     songEmotional = minim.loadFile("audio/emotional.mp3", 2048);
     songEmotional.loop();
-    
+
     songDull.pause();
     songEmotional.pause();
+
+    //sound effects
+    emotionGet = minim.loadFile("audio/emotionGetCut.mp3");
+
+    grunt = minim.loadFile("audio/gruntSnap.mp3");
     
+    typewriter = minim.loadFile("audio/typewriter2.wav");
+    whoosh1 = minim.loadFile("audio/whoosh.aif");
+    whoosh2 = minim.loadFile("audio/whoosh.aif");
+    thunder = minim.loadFile("audio/thunder.wav");
     
-    //start game
-    emotionGet = minim.loadFile("audio/emotionGetCut.wav");
-    grunt = minim.loadFile("audio/grunt.wav");
-    startGame = minim.loadFile("audio/startGame.wav");
+  }
+
+  public void update(boolean playEmotional) {
     
-    
-    
+    if (!emotionGet.isPlaying() && emotionGet.position() != 0) {
+      emotionGet = minim.loadFile("audio/emotionGetCut.mp3");
+    } 
+    if (!grunt.isPlaying() && grunt.position() != 0) {
+      grunt = minim.loadFile("audio/gruntSnap.mp3");
+    }
+
+
+    if (playEmotional && !songEmotional.isPlaying()) {
+      songDull.pause();
+      songEmotional.play();
+    }
+    if (!playEmotional && !songDull.isPlaying() ) {
+      songEmotional.pause();
+      songDull.play();
+    }
+  }
+
+  public void playGrunt() {
+    grunt.play();
+  }
+  public void playemotionGet() {
+    emotionGet.play();
   }
   
-  public void playGrunt(){
-    grunt.play(); 
+  public void playTypewriter() {
+    typewriter.play();
   }
-  public void playemotionGet(){
-    emotionGet.rewind();
-   emotionGet.play(); 
+  
+  public void playWhoosh1() {
+   whoosh1.play(); 
   }
-  public void playStartGame(){
-   startGame.play(); 
+  
+  public void playWhoosh2() {
+   whoosh2.play(); 
   }
+  
+  public void playThunder() {
+   thunder.play(); 
+  }
+  
 }
 
 class TextDisplayer {
-  int NUM_AREAS = 5;
+  int NUM_AREAS = 6;
   PFont emotional;
   PFont unemotional;
 
@@ -1082,7 +1457,7 @@ class TextDisplayer {
     interval = 6000;
     delayBetweenPassages = 5000;
 
-    emotional = loadFont("JosefinSans-24.vlw");
+    emotional = loadFont("JosefinSans-Bold-48.vlw");
     textFont(emotional, 24);
     textAlign(CENTER);
 
@@ -1093,6 +1468,7 @@ class TextDisplayer {
     allText[2].setup("church");
     allText[3].setup("fastFood");
     allText[4].setup("graduation");
+    allText[5].setup("graveyard");
 
     selectString();
     parsed = parseString(currentLine);
@@ -1269,6 +1645,231 @@ class TextDisplayer {
  
 }
 
+class TitleScene {
+ float startTime; // when the game's loaded
+ 
+ // peter molyneux is peter molyneux in...
+ float[] delaysTop = new float[4];
+ PImage[] imagesTop = new PImage[4];
+// float delayFirstLine;
+// float delaySecondLine;
+// float delayThirdLine;
+// float delayFourthLine;
+ 
+ // main title delays
+ float delayTitle; // when the title should slide in
+ float delaySubtitle; // when the subtitle should slide in
+
+ 
+ float startPosXTitle;
+ float titleX;
+ float endPosXTitle;
+ 
+ float startPosXSubtitle;
+ float subtitleX;
+ float endPosXSubtitle;
+ 
+ PImage title;
+ PImage subtitle;
+ PImage controls;
+ 
+ boolean titleShouldMove;
+ boolean subtitleShouldMove;
+ 
+ // let's make the control buttons be all wiggly
+ float[] xPositions = {47, 124, 209, 620, 698, 784};
+ float[] yPositions = {410, 417, 413, 411, 408, 408};
+ float[] newXPositions = new float[6];
+ float[] newYPositions = new float[6];
+ float[] offsets = new float[6];
+ PImage[] letters = new PImage[6];
+ float controlAlpha;
+ 
+ SoundManager SM;
+  
+  
+ public void setup(SoundManager _SM) {
+   SM = _SM;
+   
+  startTime = millis();
+  for (int i = 0; i < delaysTop.length; i++) {
+    delaysTop[i] = i * 500 + 500;  
+  }
+  
+  imagesTop[0] = loadImage("data/TitlePieces/PeterMolyneux.png");
+  imagesTop[1] = loadImage("data/TitlePieces/Is.png");
+  imagesTop[2] = loadImage("data/TitlePieces/PeterMolyneux.png");
+  imagesTop[3] = loadImage("data/TitlePieces/In.png");
+  
+  delayTitle = delaysTop[delaysTop.length-1] + 1000;
+  delaySubtitle = delayTitle + 1500;
+   
+  title = loadImage("data/TitlePieces/QWOPassages.png");
+  subtitle = loadImage("data/TitlePieces/TheMarathonOfLife.png");
+  controls = loadImage("data/TitlePieces/Controls.png");
+  
+  letters[0] = loadImage("data/TitlePieces/Q.png");
+  letters[1] = loadImage("data/TitlePieces/W.png");
+  letters[2] = loadImage("data/TitlePieces/E.png");
+  letters[3] = loadImage("data/TitlePieces/I.png");
+  letters[4] = loadImage("data/TitlePieces/O.png");
+  letters[5] = loadImage("data/TitlePieces/P.png");
+  
+  startPosXTitle = titleX = -title.width;
+  startPosXSubtitle = subtitleX = width + subtitle.width;
+  
+  endPosXTitle = width/2 - title.width/2;
+  endPosXSubtitle = width/2 - subtitle.width/2;
+  
+  titleShouldMove = false;
+  subtitleShouldMove = false;
+  
+  for (int i = 0; i < 6; i++) {
+    float random = random(10);
+    offsets[i] = random;
+  }
+  controlAlpha = 0;
+ }
+
+ public void updateTitle() {
+   float xeno = 0.9f;
+   
+   if (millis() > startTime + delayTitle) {
+     titleShouldMove = true; 
+   }
+   
+   if (millis() > startTime + delaySubtitle) {
+     subtitleShouldMove = true; 
+   }
+   
+   if (titleShouldMove) {
+     titleX = xeno*titleX + (1-xeno)*endPosXTitle;
+   }
+   
+   if (subtitleShouldMove) {
+     subtitleX = xeno*subtitleX + (1-xeno)*endPosXSubtitle;
+   }
+   
+   for (int i = 0; i < xPositions.length; i++) {
+     newXPositions[i] = xPositions[i] + 5.0f * cos(PApplet.parseFloat(millis())/500.0f + offsets[i]) * cos(PApplet.parseFloat(millis())/200.0f + offsets[i]);
+     newYPositions[i] = yPositions[i] + 5.0f * sin(PApplet.parseFloat(millis())/400.0f + offsets[i]) * sin(PApplet.parseFloat(millis())/350.0f + offsets[i]);
+   }
+   
+ }
+ 
+ public void drawTitle() {
+   for (int i = 0; i < delaysTop.length; i++) {
+    if (millis() > startTime + delaysTop[i]) {
+      if (!SM.typewriter.isPlaying() && SM.typewriter.position() < 100) {
+       SM.typewriter.play(); 
+      }
+     image(imagesTop[i], width/2 - imagesTop[i].width/2, 38 + (i*30));
+    } 
+   }
+   
+   if (titleShouldMove && SM.whoosh1.position() < 100) {
+    SM.whoosh1.play(); 
+   }
+   
+   if (subtitleShouldMove && SM.whoosh2.position() < 100) {
+    SM.whoosh2.play(); 
+   }
+   
+   image(title, titleX, 194);
+   image(subtitle, subtitleX, 339);
+
+  smooth();
+  if (millis() > startTime + delaySubtitle + 1000) {
+    controlAlpha++;
+    for (int i = 0; i < xPositions.length; i++) {
+      tint(255, controlAlpha);
+      image(letters[i], newXPositions[i], newYPositions[i]); 
+//      tint(255, 255); // uncomment if you want a less thunderous title
+    }
+    image(controls, width/2 - controls.width/2, 450);
+    
+    if (SM.thunder.position() < 100) {
+     SM.thunder.play(); 
+    }
+  }
+ }
+  
+}
+class WarningText {
+  float xPos,      yPos;
+  float startXPos, startYPos;
+  float endXPos,   endYPos, endYPosSafe;
+  
+  String warningText;
+  
+  float startTime;
+  float intervalUp;
+  
+  boolean shouldStartTimer;
+  boolean startedTimer;
+  
+  boolean active;
+  
+  public void setup() {
+    warningText = "COLLECT MORE EMOTIONS";
+
+    startXPos = xPos = endXPos = width/2;
+    
+    startYPos = yPos = height + 30; // or something~
+    endYPos = endYPosSafe = height - 20; // or something~
+    
+    intervalUp = 4000;
+    
+    active = false;
+    
+  }
+  
+  public void trigger(){
+    active = true; 
+    shouldStartTimer = false;
+    startedTimer = false;
+    endYPos = endYPosSafe;
+    yPos = startYPos;
+  }
+  
+  public void update() {
+    if (active){
+      float xeno = .9f;
+      
+      // go back down
+      if (abs(endYPos - yPos) < 2 && !shouldStartTimer) {
+        shouldStartTimer = true;
+      }
+      
+      if (shouldStartTimer && !startedTimer) {
+         startedTimer = true;
+         startTime = millis();
+      }
+        
+      if (startedTimer && millis() > startTime + intervalUp) {
+        endYPos = startYPos;
+        
+        if ( abs(yPos-startYPos) < 0.5f){
+         active = false; 
+        }
+      }
+      
+      yPos = xeno*yPos + (1-xeno)*endYPos;
+    }
+    
+  }
+  
+  public void draw() {
+    if (!active)return;
+    
+    if (millis()%1000 > 500) {
+      fill(100, 0, 0);
+    } else {
+      fill(255, 0, 0); 
+    }
+    text(warningText, xPos, yPos);
+  }
+}
 
 class particle
 {
