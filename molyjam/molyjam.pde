@@ -119,6 +119,7 @@ void endGame() {
   gameState = "end";
   endScene.start(guy.emotionalLevel);
   guy.collapse();
+  textDisplayer.shouldShowAnyText = false;
 }
 
 void update() {

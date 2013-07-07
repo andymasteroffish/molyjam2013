@@ -181,7 +181,7 @@ class Person {
       emotionalLevel -= emotionalDrainPerSec*deltaTime;
       emotionalLevel = constrain(emotionalLevel, 0, 100);
       curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
-      println("emotion "+emotionalLevel);
+      //println("emotion "+emotionalLevel);
     }
 
 

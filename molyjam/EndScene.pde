@@ -1,10 +1,13 @@
 class EndScene {
 
   PImage endBGPic;
+  
   PImage[] endPics = new PImage[3];
   PVector[] endPicsOffsets = new PVector[3];
   int curEndPic;
-  //PImage bonusPic;
+  
+  
+  PImage creditsPic, attributionPic;
 
 
   //fade in/out timer for endgame + bonus screen
@@ -17,7 +20,8 @@ class EndScene {
   float fadeTimer;
   
   boolean fadeIn;
-  //boolean showingBonus;
+  
+  int phase;
 
 
   void setup() {
@@ -31,11 +35,14 @@ class EndScene {
     endPicsOffsets[1] = new PVector(114, 171);
     endPicsOffsets[2] = new PVector(114, 183);
 
-    //bonusPic = loadImage("data/Title2_full.png");
+    creditsPic = loadImage("data/EndPieces/Credits.png");
+    attributionPic = loadImage("data/EndPieces/Attribution.png");
   }
 
   void start(float emotionalLevel) {
     curEndPic = 0; 
+    
+    phase = 0;
     
     if (emotionalLevel < 70){
       curEndPic = 1; 
@@ -58,10 +65,12 @@ class EndScene {
 
     if (fadeIn) {
       fadeAlpha = map(fadeTimer, 0, fadeTime, 0, 255);
-      if (fadeTimer >= fadeTime + pauseTime) {
-        fadeIn = false;
-        //fadeTimer = 0;
-        //showingBonus = true;
+      fadeAlpha = constrain(fadeAlpha, 0, 255);
+      if (fadeTimer >= fadeTime + pauseTime && phase<4) {
+        pauseTime = 5;
+        phase++;
+        fadeTimer = 0;
+        fadeAlpha = 0;
       }
     }
 //    else {
@@ -72,16 +81,33 @@ class EndScene {
 
   void draw() {
 
-//    if (showingBonus) {
-//      tint(255, 255);
-//
-//      image(bonusPic, 0, 0);
-//    }
-
-
-    tint(255, fadeAlpha);
+    if (phase == 0){
+      tint(255, fadeAlpha);
+    }else{
+      tint(255, 255);
+    }
     image(endBGPic, 0, 0);
-    image(endPics[curEndPic], endPicsOffsets[curEndPic].x, endPicsOffsets[curEndPic].y);
+    
+    
+    if (phase == 0 || phase == 1){
+      float thisAlpha = phase == 0 ? fadeAlpha : 255-fadeAlpha;
+      tint(255, thisAlpha);
+      image(endPics[curEndPic], endPicsOffsets[curEndPic].x, endPicsOffsets[curEndPic].y);
+    }
+    
+    
+    if (phase == 1 || phase ==2){
+      float thisAlpha = phase==1 ? fadeAlpha : 255-fadeAlpha;
+      tint(255, thisAlpha);
+      image(creditsPic, 142, 154);
+    }
+    
+    if (phase == 2 || phase ==3){
+      println("this phase: "+phase);
+      float thisAlpha = phase==2 ? fadeAlpha : 255-fadeAlpha;
+      tint(255, thisAlpha);
+      image(attributionPic, 142, 154);
+    }
 
     tint(255, 255);
   }
