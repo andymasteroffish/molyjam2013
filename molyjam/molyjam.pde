@@ -95,7 +95,7 @@ void update() {
   
     //check what kind of text we should be showing
     boolean showEmotionalText = guy.emotionalLevel > 50;
-    textDisplayer.updateShowEmotionalText( showEmotionalText );
+    textDisplayer.updateShowEmotionalText( showEmotionalText, guy.emotionalLevel, guy.emotionalLevelCutOff );
   
     //update emotion pick ups
     for (int i=emotions.size()-1; i>=0; i--) {
