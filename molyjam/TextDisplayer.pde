@@ -5,12 +5,12 @@ class TextDisplayer {
 
   PlaceText[] allText = new PlaceText[NUM_AREAS];
   String currentLine;
-  
+
   //sorting it all by place/emotion
   int placeNum;
   boolean showEmotionalText = true;
-  
-  
+
+
   ArrayList<String> parsed = new ArrayList<String>();
   ArrayList<Float> triggerTimes;
   ArrayList<Float> alphas;
@@ -19,13 +19,15 @@ class TextDisplayer {
   boolean shouldShowAnyText;
 
   float interval;
-  
+
   float delayBetweenPassages;
 
   void setup() {
     interval = 6000;
     delayBetweenPassages = 5000;
-    
+
+    emotional = loadFont("JosefinSans-24.vlw");
+    textFont(emotional, 24);
 
     //get our text
     for (int i=0; i<NUM_AREAS; i++)  allText[i] = new PlaceText();
@@ -34,30 +36,27 @@ class TextDisplayer {
     allText[2].setup("chruch");
     allText[3].setup("fastFood");
     allText[4].setup("graduation");
-    
+
     selectString();
     parsed = parseString(currentLine);
     triggerText(parsed);
     shouldShowAnyText = true;
-    
+
     showEmotionalText = true;
-    
-    emotional = loadFont("JosefinSans-24.vlw");
-    textFont(emotional, 24);
-    
   }
 
   void updateText(String location) {
     placeNum = 0;  //default in case nothing else triggers
     //println("I'm in "+location);
-    for (int i=0; i<allText.length; i++){
-      if (allText[i].area.equals(location)){  
+    for (int i=0; i<allText.length; i++) {
+      if (allText[i].area.equals(location)) {  
         placeNum = i;
+        //println("that's number "+i);
       }
     }
   }
-  
-  void updateShowEmotionalText(boolean _showEmotionalText){
+
+  void updateShowEmotionalText(boolean _showEmotionalText) {
     showEmotionalText = _showEmotionalText;
   }
 
@@ -123,21 +122,79 @@ class TextDisplayer {
   }
 
   void selectString() {
-    if (showEmotionalText){
+    if (showEmotionalText) {
       println("get it exciting");
       currentLine = allText[placeNum].getEmotionalText();
-    }else{
+    }
+    else {
       println("get it dull");
       currentLine = allText[placeNum].getDullText();
     }
   }
 
   ArrayList<String> parseString(String currentLine) {
+    
+    ArrayList<String> broken = new ArrayList<String>();
+    
     String tempLine[] = currentLine.split("(?<=[.?!]) ");
     for (int i = 0; i < tempLine.length; i++) {
-      parsed.add(tempLine[i]);
+      broken.add(tempLine[i]);
     }
-    return parsed;
+
+    //go through each parsed line and make sure it will fit on screen
+    ArrayList<String> trimmed = new ArrayList<String>();
+    for (int i=0; i<broken.size(); i++) {
+      String thisLine = broken.get(i);
+      String withBreaks = addLineBreaks(thisLine);
+
+      trimmed.add(withBreaks);
+      println("I added:");
+      println(withBreaks);
+    }
+
+    return trimmed;
+  }
+
+  String addLineBreaks(String rawLine) {
+
+    String cleanLine = ""; 
+
+    int curChar = -1;
+
+
+    while (curChar < rawLine.length ()-1) {
+
+      boolean wentOver = false;
+      while (curChar < rawLine.length ()-1 && !wentOver) {
+
+        curChar++;
+        cleanLine += rawLine.charAt(curChar);
+
+
+        //println("cur width "+textWidth(cleanLine));
+        if (textWidth(cleanLine) > width*0.98) {
+          wentOver = true;
+        }
+      }
+
+      if (wentOver) {
+        //go back until we hit a space
+        int spaceChar = curChar;
+        if (wentOver) {
+          while (cleanLine.charAt (spaceChar) != ' ') {
+            //println("space char "+spaceChar);
+            spaceChar--;
+          } 
+          println("add a space at "+spaceChar);
+          cleanLine = cleanLine.substring(0, spaceChar) +"\n" + cleanLine.substring(spaceChar+1, cleanLine.length() );
+        }
+      }
+    }
+
+
+    println("here \nit is:");
+    println(cleanLine);
+    return cleanLine;
   }
 }
 

@@ -169,6 +169,7 @@ class Person {
     
     //deal with the emotional drain
     emotionalLevel -= emotionalDrainPerSec*deltaTime;
+    emotionalLevel = constrain(emotionalLevel, 0, 100);
     curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
 
 

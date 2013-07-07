@@ -7,8 +7,8 @@ class Background {
   //PImage myBackground;  //kill me
 
   //the backgrounds for this round
-  PImage[] theseBackgrounds = new PImage[6];
-  String[] thesePlaces = new String[6];
+//  PImage[] theseBackgrounds = new PImage[6];
+//  String[] thesePlaces = new String[6];
 
 
 
@@ -24,7 +24,7 @@ class Background {
   // 700 x 600
 
   void setup() {
-    startPos = -200;
+    startPos = -15;
     
 
     loadImages();
@@ -35,11 +35,6 @@ class Background {
   void reset(){
     pos = new PVector(startPos, 0);
     
-    for (int i=0; i<theseBackgrounds.length; i++) {
-      int randomChoice = int(random(backgroundPics.length));
-      theseBackgrounds[i] = backgroundPics[randomChoice];
-      thesePlaces[i] = places[randomChoice];
-    }
   }
 
 
@@ -53,21 +48,21 @@ class Background {
     
     //draw the ones on screen
     int curWidth = 0;
-    for (int i=0; i<theseBackgrounds.length; i++){
+    for (int i=0; i<backgroundPics.length; i++){
       int xPos = (int)pos.x + curWidth;
       
-      if (xPos > -theseBackgrounds[i].width && xPos < width){
-        image(theseBackgrounds[i], xPos, pos.y); 
+      if (xPos > -backgroundPics[i].width && xPos < width){
+        image(backgroundPics[i], xPos, pos.y); 
       }
       
       
       //if this is the one the player is on, give that title to the text display
-      if (xPos < playerTargetX && xPos+theseBackgrounds[i].width > playerTargetX){
-        textDisplayer.updateText(thesePlaces[i]);
+      if (xPos < playerTargetX && xPos+backgroundPics[i].width > playerTargetX){
+        textDisplayer.updateText(places[i]);
       }
       
       
-      curWidth += theseBackgrounds[i].width;
+      curWidth += backgroundPics[i].width;
       
     }
   }

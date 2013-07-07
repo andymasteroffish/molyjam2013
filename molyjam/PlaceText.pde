@@ -17,6 +17,7 @@ class PlaceText {
 
     if (area.equals("childhood")) {
       if (dullText.size() == 0) {
+        println("refill dull childhood now");
         refillDullChildhoodText();
       }
       if (emotionalText.size() == 0) {
@@ -61,6 +62,7 @@ class PlaceText {
   }
 
   String getDullText() {
+    println("get dull for "+area);
     int randNum = int(random(dullText.size()));
     String returnText = dullText.get(randNum);
     //remove it
@@ -86,7 +88,7 @@ class PlaceText {
   
   
   void refillEmotionalChildhoodText() {
-    dullText.clear();
+    emotionalText.clear();
 
     emotionalText.add("A butterfly lands on a flower, the colors of the two combining to form the most gorgeous thing you've ever seen. For the first time, you know what true sadness is.");
 
@@ -103,9 +105,9 @@ class PlaceText {
 
 
   void refillDullChildhoodText() {
-    emotionalText.clear();
+    dullText.clear();
     
-    println("fill it fuck face");
+    println("fill it you dull child");
 
     dullText.add("Your dad gives you a red ball for your birthday. You are happy that you can utilize it for exercise, as well as appreciating the difficulty in manufacturing a completely circular ball. You nod to your father.");
     dullText.add("As a butterfly lands on a flower, you don't know whether to crush in order to rid the world of bugs or let it be devoured by some other insect. Bugs have no place in a civilized society.");
