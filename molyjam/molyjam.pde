@@ -31,6 +31,9 @@ float playerTargetX;
 // text displayer
 TextDisplayer textDisplayer = new TextDisplayer();
 
+// title
+TitleScene titleScene = new TitleScene();
+
 //sound manager
 SoundManager SM = new SoundManager();
 Minim minim;
@@ -79,7 +82,8 @@ void setup() {
   
   //setup the title
   gameState = "title";
-  titlePic = loadImage("titleScreen.png");
+  titlePic = loadImage("/data/TitlePieces/EmptyBackground.png");
+  titleScene.setup();
   
   intervalTimer = 10000; // for reading end screen
 }
@@ -102,6 +106,7 @@ void update() {
 
   if (gameState.equals("title")){
     //fucking nothing right now goddamn
+    titleScene.updateTitle();
   }else if (gameState.equals("game")){
     guy.resetForces();
   
@@ -159,6 +164,7 @@ void draw() {
   
   if (gameState.equals("title")){
     image(titlePic,0,0);
+    titleScene.drawTitle();
   }
   else if (gameState.equals("game")){
     bg.draw(playerTargetX);
