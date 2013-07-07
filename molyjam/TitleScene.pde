@@ -113,8 +113,19 @@ class TitleScene {
  void drawTitle() {
    for (int i = 0; i < delaysTop.length; i++) {
     if (millis() > startTime + delaysTop[i]) {
+      if (!SM.typewriter.isPlaying() && SM.typewriter.position() < 100) {
+       SM.typewriter.play(); 
+      }
      image(imagesTop[i], width/2 - imagesTop[i].width/2, 38 + (i*30));
     } 
+   }
+   
+   if (titleShouldMove && SM.whoosh1.position() < 100) {
+    SM.whoosh1.play(); 
+   }
+   
+   if (subtitleShouldMove && SM.whoosh2.position() < 100) {
+    SM.whoosh2.play(); 
    }
    
    image(title, titleX, 194);
@@ -129,6 +140,10 @@ class TitleScene {
 //      tint(255, 255); // uncomment if you want a less thunderous title
     }
     image(controls, width/2 - controls.width/2, 450);
+    
+    if (SM.thunder.position() < 100) {
+     SM.thunder.play(); 
+    }
   }
  }
   
