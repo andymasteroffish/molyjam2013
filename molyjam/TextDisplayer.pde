@@ -1,5 +1,7 @@
 class TextDisplayer {
   int NUM_AREAS = 1;
+  PFont emotional;
+  PFont unemotional;
 
   PlaceText[] allText = new PlaceText[NUM_AREAS];
   String currentLine;
@@ -17,9 +19,13 @@ class TextDisplayer {
   boolean shouldShowAnyText;
 
   float interval;
+  
+  float delayBetweenPassages;
 
   void setup() {
     interval = 6000;
+    delayBetweenPassages = 5000;
+    
 
     //get our text
     for (int i=0; i<NUM_AREAS; i++)  allText[i] = new PlaceText();
@@ -32,19 +38,22 @@ class TextDisplayer {
     
     showEmotionalText = true;
     
+    emotional = loadFont("JosefinSans-24.vlw");
+    textFont(emotional, 24);
+    
   }
 
   void updateText(String location) {
     placeNum = 0;  //default in case nothing else triggers
-    
     if (location == "field")  placeNum = 0;
   }
+  
   void updateShowEmotionalText(boolean _showEmotionalText){
     showEmotionalText = _showEmotionalText;
   }
 
   void draw() {
-    if (shouldShowAnyText) {
+    if (shouldShowAnyText) {      
       // fade out if last trigger happened + interval
       if (millis() > triggerTimes.get(triggerTimes.size() - 1) + interval) {
         shouldFadeAllOut = true;
@@ -54,7 +63,7 @@ class TextDisplayer {
         for (int i = 0; i < triggerTimes.size(); i++) {
           if (millis() > triggerTimes.get(i)) {
             fill(0, alphas.get(i));
-            text(parsed.get(i), 0, i*50 + 50);
+            text(parsed.get(i), width/2 - textWidth(parsed.get(i))/2, i*50 + 50);
             if (alphas.get(i) < 255) {
               float tempAlpha = alphas.get(i);
               tempAlpha++;
@@ -66,7 +75,7 @@ class TextDisplayer {
       else {
         for (int i = 0; i < triggerTimes.size(); i++) {
           fill(0, alphas.get(i));
-          text(parsed.get(i), 0, i*50 + 50);
+          text(parsed.get(i), width/2 - textWidth(parsed.get(i))/2, i*50 + 50);
           if (alphas.get(i) > 0) {
             float tempAlpha = alphas.get(i);
             tempAlpha--;
@@ -90,6 +99,7 @@ class TextDisplayer {
     parsed = parseString(currentLine);
     triggerText(parsed);
     shouldShowAnyText = true;
+    delayBetweenPassages = int(random(4000, 7000));
   }
 
   void triggerText(ArrayList<String> parsed) {
@@ -98,25 +108,12 @@ class TextDisplayer {
 
     int startTime = millis();
     for (int i = 0; i < parsed.size(); i++) {
-      triggerTimes.add(startTime + (i * interval)); 
+      triggerTimes.add(startTime + delayBetweenPassages + (i * interval)); 
       alphas.add(float(0));
     }
   }
 
-  // not really gonna change
-//  void loadText() {
-//    // where we/ezra will put the text to be loaded in
-//    //allText[0] = "You begin to think of how a child must feel when they are separated from their mother. Children, you realize, have much to teach us.";
-//    //allText[1] = "What if everyone can feel more than I can? This brings tears to your eyes.";
-//    
-//    for (int i=0; i<NUM_AREAS; i++){
-//      
-//    }
-//  }
-
   void selectString() {
-    //int random = int(random(allText.length));
-    
     if (showEmotionalText){
       currentLine = allText[placeNum].getEmotionalText();
       println("get it exciting");
@@ -124,8 +121,6 @@ class TextDisplayer {
       currentLine = allText[placeNum].getDullText();
       println("get it dull");
     }
-    
-    
   }
 
   ArrayList<String> parseString(String currentLine) {
