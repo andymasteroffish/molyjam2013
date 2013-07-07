@@ -35,6 +35,12 @@ TextDisplayer textDisplayer = new TextDisplayer();
 SoundManager SM = new SoundManager();
 Minim minim;
 
+//fade in/out timer for endgame + bonus screen
+float startMessageTimer;
+float intervalTimer;
+float fadeAlpha;
+
+
 int groundY;
 
 boolean showHidden;
@@ -42,6 +48,10 @@ boolean showHidden;
 //title stuff
 String gameState;
 PImage titlePic;
+PImage endingHighEmotions;
+PImage endingMedEmotions;
+PImage endingLowEmotions;
+PImage bonus;
 
 
 void setup() {
@@ -69,7 +79,9 @@ void setup() {
   
   //setup the title
   gameState = "title";
-  titlePic = loadImage("titleScreen.png");
+  titlePic = loadImage("TitleScreen.png");
+  
+  intervalTimer = 10000; // for reading end screen
 }
 
 void startGame(){
@@ -95,7 +107,7 @@ void update() {
   
     //check what kind of text we should be showing
     boolean showEmotionalText = guy.emotionalLevel > 50;
-    textDisplayer.updateShowEmotionalText( showEmotionalText );
+    textDisplayer.updateShowEmotionalText( showEmotionalText, guy.emotionalLevel, guy.emotionalLevelCutOff );
   
     //update emotion pick ups
     for (int i=emotions.size()-1; i>=0; i--) {
@@ -121,8 +133,17 @@ void update() {
     if (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos) {
       scroll(-playerDistFromCenter*0.1);  //xeno to make it smoother
     }
+  } else if (gameState.equals("end")) {
+    // startmessagetimer needs to be set at the moment end is triggered
+    if (millis() > startMessageTimer + intervalTimer) {
+        fade("in");
+        if (fadeAlpha > 255) {
+          gameState = "bonus";  
+        }
+    }
+  } else if (gameState.equals("bonus")) {
+    fade("out");      
   }
-  
 }
 
 void draw() {
@@ -148,6 +169,27 @@ void draw() {
       Emotion thisEmotion = emotions.get(i);
       thisEmotion.draw();
     }
+  } else if (gameState.equals("end")) {
+    if (guy.emotionalLevel < 33) {
+//      image(endingLowEmotions, 0, 0); 
+    } else if (guy.emotionalLevel >= 33 && guy.emotionalLevel < 66) {
+//      image(endingMedEmotions, 0, 0);
+    } else if (guy.emotionalLevel > 66) {
+//      image(endingHighEmotions, 0, 0);
+    }
+    
+    if (millis() > startMessageTimer + intervalTimer) {
+      noStroke();
+      fill(0, fadeAlpha);
+      rect(0, 0, width, height);
+      stroke(0);
+    }
+  } else if (gameState.equals("bonus")) {
+//    image(bonus, 0, 0);
+    noStroke();
+    fill(0, fadeAlpha);
+    rect(0, 0, width, height);
+    stroke(0);
   }
 }
 
@@ -176,6 +218,10 @@ void keyPressed() {
   //tetsing EMOTIONS
   if (key == '5') {
     spawnEmotion();
+  }
+  
+  if (key == ' ') {
+    gameState = "end";  
   }
 
 //  if (key == 's') {
@@ -207,5 +253,15 @@ void spawnEmotion() {
   Emotion newEmotion = new Emotion();
   newEmotion.setup();
   emotions.add(newEmotion);
+}
+
+void fade(String whichWay) {
+ if (whichWay.equals("in")) {
+    if (millis() > startMessageTimer + intervalTimer) {
+      fadeAlpha++;
+    }
+ } else if (whichWay.equals("out")) {
+    fadeAlpha--;
+ } 
 }
 
