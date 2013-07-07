@@ -229,7 +229,6 @@ void update() {
 
   if (gameState.equals("end")) {
     endScene.update(deltaTime);
-    println("phase "+endScene.phase);
     if(endScene.phase == 4){
       SM.songDull.pause();
       SM.songEmotional.pause();
