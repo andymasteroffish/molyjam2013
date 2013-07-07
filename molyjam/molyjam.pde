@@ -137,6 +137,9 @@ void update() {
     if (guy.emotionalLevel < guy.emotionalLevelCutOff+20 && guy.emotionalLevel > guy.emotionalLevelCutOff && !warningText.active){
       warningText.trigger();
     }
+    else if (guy.emotionalLevel > guy.emotionalLevelCutOff+20){
+     warningText.active = false; 
+    }
 
     //check what kind of text we should be showing
     boolean showEmotionalText = guy.emotionalLevel > 50;

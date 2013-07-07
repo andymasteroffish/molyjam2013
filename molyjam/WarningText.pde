@@ -63,6 +63,8 @@ class WarningText {
   }
   
   void draw() {
+    if (!active)return;
+    
     if (millis()%1000 > 500) {
       fill(100, 0, 0);
     } else {

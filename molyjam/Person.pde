@@ -39,7 +39,7 @@ class Person {
     groundY = _groundY;
 
     emotionalLevel = 100;
-    emotionalDrainPerSec = 2;
+    emotionalDrainPerSec = 1;
 
     //particle thisParticle;
 
