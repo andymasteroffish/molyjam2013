@@ -32,6 +32,7 @@ WarningText warningText = new WarningText();
 
 // background
 Background bg = new Background();
+PImage emptyBG;
 float playerTargetX;
 
 // text displayer
@@ -81,6 +82,7 @@ void setup() {
 
   bg.setup();
   textDisplayer.setup();
+  emptyBG = loadImage("data/emptyBG.png");
 
   minim = new Minim(this);
   SM.setup(minim);
@@ -224,6 +226,9 @@ void draw() {
   }
   else if (gameState.equals("game") || gameState.equals("end")) {
     
+    tint(255,255);
+    image(emptyBG, 0,0);
+    
     tint(255, map(gameTimer, 0, gameTime, 255, 0));
     bg.draw(playerTargetX);
     
@@ -276,24 +281,24 @@ void keyPressed() {
   }
 
   //tetsing EMOTIONS
-  if (key == '5') {
-    spawnEmotion();
-  }
-
-  if (key == 'k') {
-    endGame();
-  }
-
-  if (key == '-') {
-    guy.emotionalLevel = 0;
-  }
-  if (key=='=') {
-    guy.emotionalLevel = 100;
-  }
-  
-  if (key=='t') {
-    warningText.trigger();
-  }
+//  if (key == '5') {
+//    spawnEmotion();
+//  }
+//
+//  if (key == 'k') {
+//    endGame();
+//  }
+//
+//  if (key == '-') {
+//    guy.emotionalLevel = 0;
+//  }
+//  if (key=='=') {
+//    guy.emotionalLevel = 100;
+//  }
+//  
+//  if (key=='t') {
+//    warningText.trigger();
+//  }
 
   //  if (key == ' ') {
   //    gameState = "end";  
