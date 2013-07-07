@@ -28,12 +28,13 @@ class TextDisplayer {
 
     emotional = loadFont("JosefinSans-24.vlw");
     textFont(emotional, 24);
+    textAlign(CENTER);
 
     //get our text
     for (int i=0; i<NUM_AREAS; i++)  allText[i] = new PlaceText();
     allText[0].setup("childhood");
     allText[1].setup("hospital");
-    allText[2].setup("chruch");
+    allText[2].setup("church");
     allText[3].setup("fastFood");
     allText[4].setup("graduation");
 
@@ -67,15 +68,22 @@ class TextDisplayer {
         shouldFadeAllOut = true;
       }
 
+      int curY = 50;
+      int spacePerLine = 33;
       if (!shouldFadeAllOut) { // if we're not fading all of them out
         for (int i = 0; i < triggerTimes.size(); i++) {
           if (millis() > triggerTimes.get(i)) {
             fill(0, alphas.get(i));
-            text(parsed.get(i), width/2 - textWidth(parsed.get(i))/2, i*50 + 50);
+            text(parsed.get(i), width/2, curY);
             if (alphas.get(i) < 255) {
               float tempAlpha = alphas.get(i);
               tempAlpha++;
               alphas.set(i, tempAlpha);
+            }
+            curY += spacePerLine;
+            //add the spacing again if it has a line break
+            if (parsed.get(i).contains("\n")) {
+              curY += spacePerLine;
             }
           }
         }
@@ -83,7 +91,12 @@ class TextDisplayer {
       else {
         for (int i = 0; i < triggerTimes.size(); i++) {
           fill(0, alphas.get(i));
-          text(parsed.get(i), width/2 - textWidth(parsed.get(i))/2, i*50 + 50);
+          text(parsed.get(i), width/2, curY);
+          curY += spacePerLine;
+          //add the spacing again if it has a line break
+          if (parsed.get(i).contains("\n")) {
+            curY += spacePerLine;
+          }
           if (alphas.get(i) > 0) {
             float tempAlpha = alphas.get(i);
             tempAlpha--;
@@ -91,13 +104,16 @@ class TextDisplayer {
           } 
           else {
             reset();
+            break;
           }
+
         }
       }
     }
   }
 
   void reset() {
+    println("reset snoopy balls");
     parsed.clear();
     triggerTimes.clear();
     alphas.clear();
@@ -133,9 +149,9 @@ class TextDisplayer {
   }
 
   ArrayList<String> parseString(String currentLine) {
-    
+
     ArrayList<String> broken = new ArrayList<String>();
-    
+
     String tempLine[] = currentLine.split("(?<=[.?!]) ");
     for (int i = 0; i < tempLine.length; i++) {
       broken.add(tempLine[i]);
@@ -148,8 +164,6 @@ class TextDisplayer {
       String withBreaks = addLineBreaks(thisLine);
 
       trimmed.add(withBreaks);
-      println("I added:");
-      println(withBreaks);
     }
 
     return trimmed;
@@ -185,16 +199,14 @@ class TextDisplayer {
             //println("space char "+spaceChar);
             spaceChar--;
           } 
-          println("add a space at "+spaceChar);
           cleanLine = cleanLine.substring(0, spaceChar) +"\n" + cleanLine.substring(spaceChar+1, cleanLine.length() );
         }
       }
     }
-
-
-    println("here \nit is:");
-    println(cleanLine);
+    
     return cleanLine;
-  }
+ }
+ 
+ 
 }
 
