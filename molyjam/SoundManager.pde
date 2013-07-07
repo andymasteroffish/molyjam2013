@@ -25,9 +25,8 @@ class SoundManager {
     songDull.pause();
     songEmotional.pause();
     
-    
     //start game
-    emotionGet = minim.loadFile("audio/emotionGet.wav");
+    emotionGet = minim.loadFile("audio/emotionGetCut.wav");
     grunt = minim.loadFile("audio/grunt.wav");
     startGame = minim.loadFile("audio/startGame.wav");
     
@@ -35,10 +34,19 @@ class SoundManager {
     
   }
   
+  void update(){
+//    if (!emotionGet.isPlaying() && emotionGet.position() != 0){
+//      emotionGet.rewind();
+//      println(emotionGet.position());
+//      println("rewind that ish");
+//    } 
+  }
+  
   void playGrunt(){
     grunt.play(); 
   }
   void playemotionGet(){
+    
    emotionGet.play(); 
   }
   void playStartGame(){

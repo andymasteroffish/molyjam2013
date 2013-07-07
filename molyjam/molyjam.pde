@@ -79,7 +79,7 @@ void setup() {
   
   //setup the title
   gameState = "title";
-  titlePic = loadImage("TitleScreen.png");
+  titlePic = loadImage("titleScreen.png");
   
   intervalTimer = 10000; // for reading end screen
 }
@@ -116,6 +116,7 @@ void update() {
   
       if (thisEmotion.killMe) {
         emotions.remove(i);
+        SM.playemotionGet();
       }
     }
   
@@ -125,6 +126,9 @@ void update() {
       spawnEmotion();
       emotionSpawnTimer = random(emotionMinNextSpawnTime, emotionMaxNextSpawnTime);
     }
+    
+    //chekc sounds
+    SM.update();
   
     //bg.updateBackground();
   
@@ -196,7 +200,6 @@ void draw() {
 void keyPressed() {
   
   if (gameState.equals("title")){
-    println("fuck it");
     startGame();
   }
   else if (gameState.equals("game")){
@@ -220,9 +223,9 @@ void keyPressed() {
     spawnEmotion();
   }
   
-  if (key == ' ') {
-    gameState = "end";  
-  }
+//  if (key == ' ') {
+//    gameState = "end";  
+//  }
 
 //  if (key == 's') {
 //    SM.songDull.pause();
