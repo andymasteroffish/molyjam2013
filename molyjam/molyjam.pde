@@ -145,7 +145,7 @@ void update() {
       SM.playKlaxon();
     }
     else if (guy.emotionalLevel > guy.emotionalLevelCutOff+10){
-     warningText.active = false; 
+     //warningText.active = false; 
      SM.stopKlaxon();
     }
     
