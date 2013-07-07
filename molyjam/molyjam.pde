@@ -25,6 +25,8 @@ float emotionMaxNextSpawnTime = 10;
 float emotionMinNextSpawnTime = 3;
 PImage[] emotionPics = new PImage[1];
 
+ArrayList<Burst> bursts = new ArrayList<Burst>();
+
 // background
 Background bg = new Background();
 float playerTargetX;
@@ -86,9 +88,9 @@ void setup() {
   titleScene.setup(SM);
 
   endScene.setup();
-  
+
   //set emotion pick ups
-  for (int i=0; i<emotionPics.length; i++){
+  for (int i=0; i<emotionPics.length; i++) {
     String picName = "data/Pickups/pickup"+i+".png";
     emotionPics[i] = loadImage(picName);
   }
@@ -137,8 +139,28 @@ void update() {
       thisEmotion.update(deltaTime, guy);
 
       if (thisEmotion.killMe) {
-        emotions.remove(i);
+        //play sound
         SM.playemotionGet();
+
+        //create burtsts
+        for (int k=0; k<80; k++) {
+          Burst newBurst = new Burst();
+          newBurst.setup(thisEmotion.xPos, thisEmotion.yPos);
+          bursts.add(newBurst);
+        }
+
+        //actuall kill it
+        emotions.remove(i);
+      }
+    }
+
+    //update the bursts
+    for (int i=bursts.size()-1; i>=0; i--) {
+      Burst thisBurst = bursts.get(i);
+      thisBurst.update(deltaTime);
+
+      if (thisBurst.killMe) {
+        bursts.remove(i);
       }
     }
 
@@ -198,6 +220,11 @@ void draw() {
     for (int i=0; i<emotions.size(); i++) {
       Emotion thisEmotion = emotions.get(i);
       thisEmotion.draw();
+    }
+    //and their bursts
+    for (int i=0; i<bursts.size(); i++) {
+      Burst thisBurst = bursts.get(i);
+      thisBurst.draw();
     }
   } 
 
@@ -266,6 +293,10 @@ void scroll(float scrollX) {
   for (int i=0; i<emotions.size(); i++) {
     Emotion thisEmotion = emotions.get(i);
     thisEmotion.scroll(scrollX);
+  }
+  for (int i=0; i<bursts.size(); i++) {
+    Burst thisBurst = bursts.get(i);
+    thisBurst.scroll(scrollX);
   }
 }
 
