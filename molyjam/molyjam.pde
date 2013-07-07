@@ -6,7 +6,7 @@
  * This game should only be played by                   *
  * those seeking a true emotional experience            *
  *                                                      *
- * Game By Ezra Shrage, Jane Friedhoff,                 *
+ * Game By Ezra Schrage, Jane Friedhoff,                 *
  * Ben Johnson & Andy Wallace for Molyjam 2013          *
  ********************************************************/
  
@@ -42,7 +42,6 @@ boolean showHidden;
 //title stuff
 String gameState;
 PImage titlePic;
-
 
 
 void setup() {
@@ -95,8 +94,8 @@ void update() {
     guy.update(deltaTime);
   
     //check what kind of text we should be showing
-    boolean showEmotionalText = guy.emotionalLevel > guy.emotionalLevelCutOff;
-    textDisplayer.updateShowEmotionalText( showEmotionalText, guy.emotionalLevel, guy.emotionalLevelCutOff );
+    boolean showEmotionalText = guy.emotionalLevel > 50;
+    textDisplayer.updateShowEmotionalText( showEmotionalText );
   
     //update emotion pick ups
     for (int i=emotions.size()-1; i>=0; i--) {
@@ -177,13 +176,6 @@ void keyPressed() {
   //tetsing EMOTIONS
   if (key == '5') {
     spawnEmotion();
-  }
-  
-  if (key == '-'){
-    guy.emotionalLevel = 100;
-  }
-  if (key == '='){
-    guy.emotionalLevel = 0;
   }
 
 //  if (key == 's') {
