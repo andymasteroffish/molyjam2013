@@ -24,6 +24,7 @@ class TitleScene {
  
  PImage title;
  PImage subtitle;
+ PImage controls;
  
  boolean titleShouldMove;
  boolean subtitleShouldMove;
@@ -40,7 +41,7 @@ class TitleScene {
  void setup() {
   startTime = millis();
   for (int i = 0; i < delaysTop.length; i++) {
-    delaysTop[i] = i * 500;  
+    delaysTop[i] = i * 500 + 500;  
   }
   
   imagesTop[0] = loadImage("data/TitlePieces/PeterMolyneux.png");
@@ -49,10 +50,11 @@ class TitleScene {
   imagesTop[3] = loadImage("data/TitlePieces/In.png");
   
   delayTitle = delaysTop[delaysTop.length-1] + 1000;
-  delaySubtitle = delayTitle + 2000;
+  delaySubtitle = delayTitle + 1500;
    
   title = loadImage("data/TitlePieces/QWOPassages.png");
   subtitle = loadImage("data/TitlePieces/TheMarathonOfLife.png");
+  controls = loadImage("data/TitlePieces/Controls.png");
   
   letters[0] = loadImage("data/TitlePieces/Q.png");
   letters[1] = loadImage("data/TitlePieces/W.png");
@@ -119,7 +121,9 @@ class TitleScene {
     for (int i = 0; i < xPositions.length; i++) {
       tint(255, controlAlpha);
       image(letters[i], newXPositions[i], newYPositions[i]); 
+//      tint(255, 255); // uncomment if you want a less thunderous title
     }
+    image(controls, width/2 - controls.width/2, 450);
   }
  }
   
