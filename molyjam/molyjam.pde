@@ -82,7 +82,7 @@ void setup() {
   
   //setup the title
   gameState = "title";
-  titlePic = loadImage("titleScreen.png");
+  titlePic = loadImage("/data/TitlePieces/EmptyBackground.png");
   titleScene.setup();
   
   intervalTimer = 10000; // for reading end screen

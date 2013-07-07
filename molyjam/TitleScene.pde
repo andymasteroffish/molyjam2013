@@ -31,8 +31,8 @@ class TitleScene {
   delayTitle = 1000;
   delaySubtitle = 2000;
    
-  title = loadImage("1 copy.jpeg");
-  subtitle = loadImage("1 copy.jpeg");
+  title = loadImage("data/TitlePieces/QWOPassages.png");
+  subtitle = loadImage("data/TitlePieces/TheMarathonOfLife.png");
   
   startPosXTitle = titleX = -title.width;
   startPosXSubtitle = subtitleX = width + subtitle.width;
