@@ -29,7 +29,7 @@ class TextDisplayer {
     interval = 6000;
     delayBetweenPassages = 5000;
 
-    emotional = loadFont("JosefinSans-24.vlw");
+    emotional = loadFont("JosefinSans-Bold-48.vlw");
     textFont(emotional, 24);
     textAlign(CENTER);
 
