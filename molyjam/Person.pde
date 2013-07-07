@@ -4,7 +4,8 @@ class Person {
   spring[] springs = new spring[27];
   float thisScale;
 
-  PImage facePic;
+  PImage[] facePics = new PImage[2];
+  PImage curFacePic;
   PVector facePoint;
   float faceAngle;
 
@@ -18,9 +19,11 @@ class Person {
   //emotions
   float emotionalLevel;
   float emotionalDrainPerSec;
+  float emotionalLevelCutOff = 50;
 
   void setup(int _groundY) {
-    guy.facePic = loadImage("pic/pmneux.png");
+    facePics[0] = loadImage("pic/pmneuxSad.png");
+    facePics[1] = loadImage("pic/pmneux1.png");
 
     thisScale = 35;   //how much to multiply everything by
     
@@ -166,7 +169,7 @@ class Person {
     
     //deal with the emotional drain
     emotionalLevel -= emotionalDrainPerSec*deltaTime;
-    //println("emotions: "+emotionalLevel);
+    curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
 
 
     //check the keys
@@ -278,7 +281,7 @@ class Person {
     pushMatrix();
     translate(facePoint.x, facePoint.y);
     rotate(faceAngle);
-    image(facePic, -facePic.width/2, -facePic.height/2);
+    image(curFacePic, -curFacePic.width/2, -curFacePic.height/2);
     popMatrix();
 
     if (showDebug){

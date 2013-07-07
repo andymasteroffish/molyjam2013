@@ -1,3 +1,15 @@
+/********************************************************
+ * QWOPassage: The Journey of Peter Molyneux            *
+ *                                                      *
+ * This is an important game and Im glad you found it   *
+ *                                                      *
+ * This game should only be played by                   *
+ * those seeking a true emotional experience            *
+ *                                                      *
+ * Game By Ezra Shrage, Jane Friedhoff,                 *
+ * Ben Johnsom & Andy Wallace for Molyjam 2013          *
+ ********************************************************/
+ 
 import ddf.minim.*;
 
 //timing
@@ -27,6 +39,10 @@ int groundY;
 
 boolean showHidden;
 
+//title stuff
+String gameState;
+PImage titlePic;
+
 
 void setup() {
 
@@ -40,9 +56,6 @@ void setup() {
   guy.setup(groundY);
   playerTargetX = width/2;
   
-  //start with some time before the first emotion spawn
-  emotionSpawnTimer = emotionMaxNextSpawnTime;
-
 
   showHidden = false;
 
@@ -53,71 +66,105 @@ void setup() {
 
   minim = new Minim(this);
   SM.setup(minim);
+  
+  //setup the title
+  gameState = "title";
+  titlePic = loadImage("titleScreen.png");
+}
+
+void startGame(){
+    //start with some time before the first emotion spawn
+  emotionSpawnTimer = emotionMaxNextSpawnTime;
+  
+  bg.reset();
+  guy.resetPlayer();
+  
+  gameState = "game";
 }
 
 void update() {
   float deltaTime = ((float)millis()-prevFrameTime)/1000.0;
   prevFrameTime = millis();
 
-  guy.resetForces();
-
-  guy.update(deltaTime);
-
-  //check what kind of text we should be showing
-  boolean showEmotionalText = guy.emotionalLevel > 50;
-  println("emotions: "+showEmotionalText);
-  textDisplayer.updateShowEmotionalText( showEmotionalText );
-
-  //update emotion pick ups
-  for (int i=emotions.size()-1; i>=0; i--) {
-    Emotion thisEmotion = emotions.get(i);
-    thisEmotion.update(deltaTime, guy);
-
-    if (thisEmotion.killMe) {
-      emotions.remove(i);
+  if (gameState.equals("title")){
+    //fucking nothing right now goddamn
+  }else if (gameState.equals("game")){
+    guy.resetForces();
+  
+    guy.update(deltaTime);
+  
+    //check what kind of text we should be showing
+    boolean showEmotionalText = guy.emotionalLevel > 50;
+    textDisplayer.updateShowEmotionalText( showEmotionalText );
+  
+    //update emotion pick ups
+    for (int i=emotions.size()-1; i>=0; i--) {
+      Emotion thisEmotion = emotions.get(i);
+      thisEmotion.update(deltaTime, guy);
+  
+      if (thisEmotion.killMe) {
+        emotions.remove(i);
+      }
+    }
+  
+    //is it time for a new emotion?
+    emotionSpawnTimer -= deltaTime;
+    if (emotionSpawnTimer <= 0) {
+      spawnEmotion();
+      emotionSpawnTimer = random(emotionMinNextSpawnTime, emotionMaxNextSpawnTime);
+    }
+  
+    //bg.updateBackground();
+  
+    //check for scrolling (on his pelvis)
+    float playerDistFromCenter = guy.particles[3].pos.x - playerTargetX;
+    if (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos) {
+      scroll(-playerDistFromCenter*0.1);  //xeno to make it smoother
     }
   }
-
-  //is it time for a new emotion?
-  emotionSpawnTimer -= deltaTime;
-  if (emotionSpawnTimer <= 0) {
-    spawnEmotion();
-    emotionSpawnTimer = random(emotionMinNextSpawnTime, emotionMaxNextSpawnTime);
-  }
-
-  //bg.updateBackground();
-
-  //check for scrolling (on his pelvis)
-  float playerDistFromCenter = guy.particles[3].pos.x - playerTargetX;
-  if (playerDistFromCenter > 0 || bg.pos.x <= bg.startPos) {
-    scroll(-playerDistFromCenter*0.1);  //xeno to make it smoother
-  }
+  
 }
 
 void draw() {
   update();
 
   background(255);
-
-  bg.draw(playerTargetX);
-
-  guy.draw(showHidden);
-
-  textDisplayer.draw();
-
-  stroke(0);
-  line(0, groundY, width, groundY);
-
-  //draw the emotion pick ups
-  for (int i=0; i<emotions.size(); i++) {
-    Emotion thisEmotion = emotions.get(i);
-    thisEmotion.draw();
+  
+  if (gameState.equals("title")){
+    image(titlePic,0,0);
+  }
+  else if (gameState.equals("game")){
+    bg.draw(playerTargetX);
+  
+    guy.draw(showHidden);
+  
+    textDisplayer.draw();
+  
+    stroke(0);
+    line(0, groundY, width, groundY);
+  
+    //draw the emotion pick ups
+    for (int i=0; i<emotions.size(); i++) {
+      Emotion thisEmotion = emotions.get(i);
+      thisEmotion.draw();
+    }
   }
 }
 
 void keyPressed() {
-  guy.checkKeyDown(key);
+  
+  if (gameState.equals("title")){
+    println("fuck it");
+    startGame();
+  }
+  else if (gameState.equals("game")){
+    guy.checkKeyDown(key);
+  }
+  
+  
 
+
+  //DEBUG STUFF
   if (key == 'd') {
     showHidden = !showHidden;
   }
@@ -131,14 +178,15 @@ void keyPressed() {
     spawnEmotion();
   }
 
-  if (key == 's') {
-    SM.songDull.pause();
-    SM.songEmotional.play();
-  }
-  if (key == 'd') {
-    SM.songEmotional.pause();
-    SM.songDull.play();
-  }
+//  if (key == 's') {
+//    SM.songDull.pause();
+//    SM.songEmotional.play();
+//  }
+//  if (key == 'd') {
+//    SM.songEmotional.pause();
+//    SM.songDull.play();
+//  }
+
 }
 
 void keyReleased() {

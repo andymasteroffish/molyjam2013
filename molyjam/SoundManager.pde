@@ -16,8 +16,10 @@ class SoundManager {
     songEmotional = minim.loadFile("audio/emotional.mp3", 2048);
     songEmotional.loop();
     
-    //songDull.play();
-    //songEmotional.play();
+    songDull.pause();
+    songEmotional.pause();
+    
+    
     
     
   }

@@ -1,6 +1,5 @@
 class Background {
   PVector pos;
-  PVector increment;
 
   PImage[] backgroundPics = new PImage[4];
   String[] places = new String[4];
@@ -19,17 +18,23 @@ class Background {
 
   int currentIndex;
 
-  float startPos = -200;
+  float startPos;
 
 
   // 700 x 600
 
   void setup() {
-    increment = new PVector(2, 0);
-    pos = new PVector(startPos, 0);
+    startPos = -200;
+    
 
     loadImages();
 
+    
+  }
+  
+  void reset(){
+    pos = new PVector(startPos, 0);
+    
     for (int i=0; i<theseBackgrounds.length; i++) {
       int randomChoice = int(random(backgroundPics.length));
       theseBackgrounds[i] = backgroundPics[randomChoice];
