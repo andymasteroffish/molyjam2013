@@ -7,7 +7,7 @@
  * those seeking a true emotional experience            *
  *                                                      *
  * Game By Ezra Shrage, Jane Friedhoff,                 *
- * Ben Johnsom & Andy Wallace for Molyjam 2013          *
+ * Ben Johnson & Andy Wallace for Molyjam 2013          *
  ********************************************************/
  
 import ddf.minim.*;
@@ -42,6 +42,7 @@ boolean showHidden;
 //title stuff
 String gameState;
 PImage titlePic;
+
 
 
 void setup() {

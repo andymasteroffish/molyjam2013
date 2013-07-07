@@ -1,8 +1,8 @@
 class Background {
   PVector pos;
 
-  PImage[] backgroundPics = new PImage[4];
-  String[] places = new String[4];
+  PImage[] backgroundPics = new PImage[5];
+  String[] places = new String[5];
 
   //PImage myBackground;  //kill me
 
@@ -78,11 +78,14 @@ class Background {
     backgroundPics[1] = loadImage("fastfood.png");
     backgroundPics[2] = loadImage("graduation.png");
     backgroundPics[3] = loadImage("church_interior.png");
+    backgroundPics[4] = loadImage("hospital.png");
 
-    places[0] = "wall";
+    places[0] = "childhood";
     places[1] = "fastFood";
     places[2] = "graduation";
     places[3] = "church";
+    places[4] = "hospital";
+    
   }
 
 }

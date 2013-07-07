@@ -1,5 +1,5 @@
 class TextDisplayer {
-  int NUM_AREAS = 1;
+  int NUM_AREAS = 5;
   PFont emotional;
   PFont unemotional;
 
@@ -29,8 +29,12 @@ class TextDisplayer {
 
     //get our text
     for (int i=0; i<NUM_AREAS; i++)  allText[i] = new PlaceText();
-    allText[0].setup("field");
-
+    allText[0].setup("childhood");
+    allText[1].setup("hospital");
+    allText[2].setup("chruch");
+    allText[3].setup("fastFood");
+    allText[4].setup("graduation");
+    
     selectString();
     parsed = parseString(currentLine);
     triggerText(parsed);
@@ -45,7 +49,12 @@ class TextDisplayer {
 
   void updateText(String location) {
     placeNum = 0;  //default in case nothing else triggers
-    if (location == "field")  placeNum = 0;
+    //println("I'm in "+location);
+    for (int i=0; i<allText.length; i++){
+      if (allText[i].area.equals(location)){  
+        placeNum = i;
+      }
+    }
   }
   
   void updateShowEmotionalText(boolean _showEmotionalText){
@@ -115,11 +124,11 @@ class TextDisplayer {
 
   void selectString() {
     if (showEmotionalText){
-      currentLine = allText[placeNum].getEmotionalText();
       println("get it exciting");
+      currentLine = allText[placeNum].getEmotionalText();
     }else{
-      currentLine = allText[placeNum].getDullText();
       println("get it dull");
+      currentLine = allText[placeNum].getDullText();
     }
   }
 
