@@ -27,6 +27,9 @@ PImage[] emotionPics = new PImage[4];
 
 ArrayList<Burst> bursts = new ArrayList<Burst>();
 
+//emotion warning
+WarningText warningText = new WarningText();
+
 // background
 Background bg = new Background();
 float playerTargetX;
@@ -88,6 +91,8 @@ void setup() {
   titleScene.setup(SM);
 
   endScene.setup();
+  
+  warningText.setup();
 
   //set emotion pick ups
   for (int i=0; i<emotionPics.length; i++) {
@@ -128,6 +133,10 @@ void update() {
     guy.resetForces();
 
     guy.update(deltaTime, gameState.equals("game"));
+    
+    if (guy.emotionalLevel < guy.emotionalLevelCutOff+20 && guy.emotionalLevel > guy.emotionalLevelCutOff && !warningText.active){
+      warningText.trigger();
+    }
 
     //check what kind of text we should be showing
     boolean showEmotionalText = guy.emotionalLevel > 50;
@@ -163,6 +172,9 @@ void update() {
         bursts.remove(i);
       }
     }
+    
+    //update the warning
+    warningText.update();
 
     //is it time for a new emotion?
     emotionSpawnTimer -= deltaTime;
@@ -226,6 +238,9 @@ void draw() {
       Burst thisBurst = bursts.get(i);
       thisBurst.draw();
     }
+    
+    //emotions warning
+    warningText.draw();
   } 
 
   if (gameState.equals("end")) {
@@ -266,6 +281,10 @@ void keyPressed() {
   }
   if (key=='=') {
     guy.emotionalLevel = 100;
+  }
+  
+  if (key=='t') {
+    warningText.trigger();
   }
 
   //  if (key == ' ') {

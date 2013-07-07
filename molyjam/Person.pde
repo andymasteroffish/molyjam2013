@@ -9,7 +9,7 @@ class Person {
   PVector facePoint;
   float faceAngle;
   
-  float pull = 0.2;  //how much to pull the player each frame
+  float pull = 0.3;  //how much to pull the player each frame
 
 
   MuscleKey[] muscleKeys = new MuscleKey[6];
@@ -181,13 +181,18 @@ class Person {
       emotionalLevel -= emotionalDrainPerSec*deltaTime;
       emotionalLevel = constrain(emotionalLevel, 0, 100);
       curFacePic = (emotionalLevel < emotionalLevelCutOff) ? facePics[0] : facePics[1];
-      //println("emotion "+emotionalLevel);
+      println("emotion "+emotionalLevel);
     }
 
 
     //check the keys
+    boolean anyKeyIsDown = false;
     for (int i=0; i<muscleKeys.length; i++) {
       muscleKeys[i].update(deltaTime);
+      
+      if (muscleKeys[i].isDown){
+       anyKeyIsDown = true; 
+      }
     }
 
 
@@ -209,7 +214,7 @@ class Person {
       particles[i].update();
       
       //pull the player
-      if (!collapsed){
+      if (!collapsed && anyKeyIsDown){
        particles[i].pos.x += pull; 
       }
     }
