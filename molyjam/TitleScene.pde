@@ -17,6 +17,14 @@ class TitleScene {
  boolean titleShouldMove;
  boolean subtitleShouldMove;
  
+ // let's make the control buttons be all wiggly
+ float[] xPositions = new float[6];
+ float[] yPositions = new float[6];
+ 
+ float[] newXPositions = new float[6];
+ float[] newYPositions = new float[6];
+ 
+ float[] offsets = new float[6];
   
  void setup() {
   startTime = millis(); // since it never REALLY starts on millis()
@@ -34,6 +42,13 @@ class TitleScene {
   
   titleShouldMove = false;
   subtitleShouldMove = false;
+  
+  for (int i = 0; i < 6; i++) {
+    float random = random(10);
+    offsets[i] = random;
+    xPositions[i] = i * 50 + 50;
+    yPositions[i] = 400;
+  }
  }
 
  void updateTitle() {
@@ -55,11 +70,21 @@ class TitleScene {
      subtitleX = xeno*subtitleX + (1-xeno)*endPosXSubtitle;
    }
    
+   for (int i = 0; i < xPositions.length; i++) {
+     newXPositions[i] = xPositions[i] + 5.0 * cos(float(millis())/500.0 + offsets[i]) * cos(float(millis())/200.0 + offsets[i]);
+     newYPositions[i] = yPositions[i] + 5.0 * sin(float(millis())/500.0 + offsets[i]) * sin(float(millis())/350.0 + offsets[i]);
+   }
+   
  }
  
  void drawTitle() {
    image(title, titleX, 100);
    image(subtitle, subtitleX, 300);
+
+  smooth();
+  for (int i = 0; i < xPositions.length; i++) {
+    image(title, newXPositions[i], newYPositions[i]); 
+  }
  }
   
 }
