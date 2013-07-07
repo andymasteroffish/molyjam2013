@@ -194,14 +194,12 @@ void draw() {
 
 void keyPressed() {
 
-  if (gameState.equals("title")) {
+  if (gameState.equals("title") &&  millis() > titleScene.startTime + titleScene.delaySubtitle + 1000) {
     startGame();
   }
   else if (gameState.equals("game")) {
     guy.checkKeyDown(key);
   }
-
-
 
 
   //DEBUG STUFF
